@@ -111,13 +111,15 @@ CAPEX; demand-based surplus >= rated surplus.
 | Statistic | Value |
 |---|---|
 | Clusters | 300 |
+| Median parcels per cluster | 2 |
+| Median clipped area (ha) | 0.44 |
 | Median required power (kW) | 0.45 |
 | Max required power (kW) | 10.50 |
 | Multiple pumps required | 0 (0%) |
 | Demand above catalogue delivery (warning) | 0 (0%) |
 | Annual surplus > 0, rated (headline) | 0 (0%) |
 | Annual surplus > 0, demand (sensitivity) | 286 (95%) |
-| Median surplus months, rated | 4 |
+| Surplus months, rated (min-max) | 4-4 |
 | Median annual surplus, demand (kWh/day) | 14.2 |
 
 | selection | Clusters |
@@ -130,11 +132,11 @@ CAPEX; demand-based surplus >= rated surplus.
 
 *Batch run over random wells.*
 
-Required power is small because a 150 m radius encloses at most
-7.07 ha: even fully irrigated at the highest demand coefficient
-(55 m3/ha/day) a cluster needs 12.8 kW, so several pumps
-are needed only for clusters dominated by that archetype. The catalogue's
-delivery column is flagged rather than used (Task 2 report, section 6).
+A 150 m radius encloses at most 7.07 ha; even fully irrigated at the
+highest demand coefficient (55 m3/ha/day) a cluster needs
+12.8 kW, so several pumps are possible only for clusters dominated by
+that archetype. No cluster in this sample needs more than one pump: clusters in this dataset are small (median 0.44 ha). Every cluster has 4 surplus months under the rated consumption: the threshold (about 5.9 PSH) is set by the catalogue, and the monthly irradiance varies little across the sampled grid cells. The demand-based surplus is zero for 14 clusters, whose required power is 82%-100% of the installed motor power: when the pump is sized close to the demand, even demand-based pumping uses all the PV output. The catalogue's delivery
+column is flagged rather than used (Task 2 report, section 6).
 
 ## 4. Multiple-pump strategies
 
@@ -216,10 +218,10 @@ by the daily demand.
 
 | Item | Value |
 |---|---|
-| Generated (UTC) | 2026-10-27 16:18 |
+| Generated (UTC) | 2026-10-27 18:25 |
 | Python | 3.10.12 |
 | Platform | Linux-6.8.0-106-generic-x86_64-with-glibc2.35 |
-| Git commit | 74e0f8f |
+| Git commit | eef0ef2 |
 | Random seed | 20261027 |
 | geopandas | 1.1.4 |
 | shapely | 2.1.2 |

@@ -116,9 +116,7 @@ JUL, +15% relative to the station benchmark. Hargreaves is known
 to over-estimate Penman-Monteith in Alentejo by 0-23 % (regional slope 1.08; same
 source), which lies within that documented range.
 
-Note: the *climatology* parameters `T2M_MAX`/`T2M_MIN` and `T2M_MAX_AVG`/
-`T2M_MIN_AVG` are statistics of monthly extremes, not means of daily values;
-using them overstates the diurnal range and therefore ET0. Daily data avoid this.
+Why daily data: NASA documents `T2M_MAX_AVG` as the average of the daily maximum temperature. At this site, however, the climatology endpoint returns 41.4 C for July (`T2M_MAX`: 45.1 C), whereas the mean of NASA's own daily maxima for 2001-2020 is 34.9 C. The cause of this difference is not documented, so ET0 is computed from the daily series, which matches the definition required by the Hargreaves equation.
 
 | Month | Mean daily Tmax (C) | Mean daily Tmin (C) | Mean T (C) | Ra, FAO-56 (MJ/m2/day) | ET0 Hargreaves (mm/day) |
 |---|---|---|---|---|---|
@@ -217,10 +215,10 @@ against the real network stack.
 
 | Item | Value |
 |---|---|
-| Generated (UTC) | 2026-10-27 15:15 |
+| Generated (UTC) | 2026-10-27 18:24 |
 | Python | 3.10.12 |
 | Platform | Linux-6.8.0-106-generic-x86_64-with-glibc2.35 |
-| Git commit | 649c9a2 |
+| Git commit | eef0ef2 |
 | Random seed | 20261027 |
 | geopandas | 1.1.4 |
 | shapely | 2.1.2 |

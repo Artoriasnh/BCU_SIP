@@ -14,7 +14,7 @@ This report verifies the parcel ingestion and clustering engine (`dss.spatial`, 
 | Planar areas agree with declared areas | PASS | median \|error\| = 0.009% (threshold 1 %) |
 | Planar areas agree with geodesic areas | PASS | P99 \|error\| = 0.0409% (threshold 0.5 %) |
 | Buffer polygon approximates the 150 m disc | PASS | area error -0.0402% with 128 vertices |
-| Cluster extraction well under a few seconds | PASS | P95 query time 3.1 ms |
+| Cluster extraction well under a few seconds | PASS | P95 query time 3.3 ms |
 | No unexpected exception over random locations | PASS | 1000 runs; unexpected errors: 0 |
 | Every point inside a parcel yields a cluster | PASS | 500 / 500 parcel points succeeded |
 | Geometric invariants hold for every cluster | PASS | clipped area > buffer area: 0, clipped area > whole-parcel area: 0, centroid outside buffer: 0, empty cluster returned: 0 |
@@ -104,9 +104,9 @@ intersection test.
 
 | Step | Time |
 |---|---|
-| Read shapefile (4 attributes) | 1.0 s |
+| Read PT.zip (4 attributes) | 2.1 s |
 | Prepare layer (reproject, classify, index) | 2.0 s |
-| Cluster query (n = 200) | median 2.5 ms, P95 3.1 ms, max 4.0 ms |
+| Cluster query (n = 200) | median 2.6 ms, P95 3.3 ms, max 4.5 ms |
 
 ## 4. Robustness over random locations
 
@@ -213,10 +213,10 @@ nearest cluster of any composition lies 1.40 km away;
 
 | Item | Value |
 |---|---|
-| Generated (UTC) | 2026-10-27 14:49 |
+| Generated (UTC) | 2026-10-27 18:24 |
 | Python | 3.10.12 |
 | Platform | Linux-6.8.0-106-generic-x86_64-with-glibc2.35 |
-| Git commit | 649c9a2 |
+| Git commit | eef0ef2 |
 | Random seed | 20261027 |
 | geopandas | 1.1.4 |
 | shapely | 2.1.2 |
@@ -226,5 +226,4 @@ nearest cluster of any composition lies 1.40 km away;
 | numpy | 2.2.6 |
 | requests | 2.34.2 |
 | matplotlib | 3.10.9 |
-| MD5 PT_2021_EC21.shp | 2917da9463360f927f02872f3a127794 |
-| MD5 PT_2021_EC21.dbf | fc2c3cade56824b3aee277e9a29e32e2 |
+| MD5 PT.zip | 3dba9c89c559b34d57acd286505bcb66 |

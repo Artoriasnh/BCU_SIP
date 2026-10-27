@@ -122,6 +122,11 @@ class TestParseResponse:
         with pytest.raises(SolarDataError, match="lacks field"):
             parse_power_response(payload, PARAM)
 
+    def test_malformed_geometry_rejected(self, payload):
+        payload["geometry"]["coordinates"] = ["x"]
+        with pytest.raises(SolarDataError, match="geometry"):
+            parse_power_response(payload, PARAM)
+
     def test_result_is_read_only(self, payload):
         solar = parse_power_response(payload, PARAM)
         with pytest.raises(TypeError):
@@ -235,6 +240,26 @@ class TestDiskCache:
         )
         with pytest.raises(SolarDataError, match="request failed"):
             client.fetch(LAT, LON)
+
+
+class TestCacheFailures:
+    def test_unreadable_cache_file_is_ignored(self, payload, tmp_path):
+        online, _, _ = _client(FakeResponse(payload=payload), cache_dir=tmp_path)
+        online.fetch(LAT, LON)
+        next(tmp_path.glob("*.json")).write_text("not json", encoding="utf-8")
+        offline, _, _ = _client(
+            requests.ConnectionError("offline"),
+            cache_dir=tmp_path,
+            config=SolarApiConfig(max_retries=0),
+        )
+        with pytest.raises(SolarDataError, match="request failed"):
+            offline.fetch(LAT, LON)
+
+    def test_cache_write_failure_does_not_break_fetch(self, payload, tmp_path):
+        not_a_dir = tmp_path / "file"
+        not_a_dir.write_text("", encoding="utf-8")
+        client, _, _ = _client(FakeResponse(payload=payload), cache_dir=not_a_dir)
+        assert client.fetch(LAT, LON).source == "api"
 
 
 class TestLoadFile:

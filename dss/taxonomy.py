@@ -7,6 +7,10 @@ parcel. Instead, the rules in ``resources/hcat_mapping.csv`` map HCAT branches
 (code prefixes) to archetypes. The longest matching prefix wins, so a specific
 rule can override its parent; unmatched or missing codes fall back to the brief's
 "Other / NaN" archetype. See ASSUMPTIONS A1.
+
+A small override table (``resources/label_overrides.csv``) corrects documented
+EuroCrops harmonisation errors. Each override matches both the HCAT code and the
+national crop label, so it cannot affect other parcels with the same code.
 """
 
 from __future__ import annotations
@@ -35,6 +39,8 @@ EXCLUDED_TOKEN: Final[str] = "EXCLUDED"
 
 _PREFIX_PATTERN: Final[re.Pattern[str]] = re.compile(r"^\d{1,10}$")
 _MAPPING_RESOURCE: Final[str] = "hcat_mapping.csv"
+_OVERRIDES_RESOURCE: Final[str] = "label_overrides.csv"
+_CODE_PATTERN: Final[re.Pattern[str]] = re.compile(r"^\d{10}$")
 
 
 @dataclass(frozen=True, slots=True)
@@ -104,11 +110,7 @@ class HcatClassifier:
         Raises:
             DataValidationError: If a column is missing or a category is unknown.
         """
-        if path is None:
-            resource = resources.files("dss") / "resources" / _MAPPING_RESOURCE
-            text = resource.read_text(encoding="utf-8")
-        else:
-            text = Path(path).read_text(encoding="utf-8")
+        text = _read_text(path, _MAPPING_RESOURCE)
         return cls(list(_parse_rules(text.splitlines())))
 
     @property
@@ -157,6 +159,108 @@ class HcatClassifier:
         )
 
 
+@dataclass(frozen=True, slots=True)
+class LabelOverride:
+    """Correction of one EuroCrops harmonisation error.
+
+    Attributes:
+        hcat_code: Full 10-digit HCAT code assigned by EuroCrops.
+        original_label: National crop label (``EC_org_n``) the override applies to.
+        category: Corrected crop archetype, or ``None`` to exclude the parcels.
+        rationale: Justification of the correction.
+    """
+
+    hcat_code: str
+    original_label: str
+    category: CropCategory | None
+    rationale: str
+
+
+class LabelOverrides:
+    """Apply label-specific corrections on top of the code-based classification."""
+
+    def __init__(self, overrides: Sequence[LabelOverride] = ()) -> None:
+        """Build the override table.
+
+        Args:
+            overrides: Corrections; each (code, label) pair must be unique.
+
+        Raises:
+            DataValidationError: If a code is malformed or a key is duplicated.
+        """
+        keys: set[tuple[str, str]] = set()
+        for override in overrides:
+            if not _CODE_PATTERN.fullmatch(override.hcat_code):
+                raise DataValidationError(
+                    f"Invalid HCAT code {override.hcat_code!r}: expected 10 digits."
+                )
+            key = (override.hcat_code, _normalise_label(override.original_label))
+            if key in keys:
+                raise DataValidationError(f"Duplicate override for {key}.")
+            keys.add(key)
+        self._overrides: tuple[LabelOverride, ...] = tuple(overrides)
+
+    @classmethod
+    def from_csv(cls, path: str | Path | None = None) -> LabelOverrides:
+        """Load overrides from a CSV file.
+
+        Args:
+            path: CSV with columns ``hcat_code``, ``original_label``, ``category``
+                and ``rationale``. Defaults to the packaged ``label_overrides.csv``.
+
+        Returns:
+            The override table.
+
+        Raises:
+            DataValidationError: If a column is missing or a category is unknown.
+        """
+        reader = csv.DictReader(_read_text(path, _OVERRIDES_RESOURCE).splitlines())
+        _require_columns(
+            reader, {"hcat_code", "original_label", "category", "rationale"}
+        )
+        return cls(
+            [
+                LabelOverride(
+                    hcat_code=row["hcat_code"].strip(),
+                    original_label=row["original_label"].strip(),
+                    category=_parse_category(row["category"], row["hcat_code"]),
+                    rationale=row["rationale"].strip(),
+                )
+                for row in reader
+            ]
+        )
+
+    @property
+    def overrides(self) -> tuple[LabelOverride, ...]:
+        """The corrections, in file order."""
+        return self._overrides
+
+    def apply(
+        self, codes: pd.Series, labels: pd.Series, categories: pd.Series
+    ) -> pd.Series:
+        """Return ``categories`` with the corrections applied.
+
+        Args:
+            codes: HCAT code per parcel.
+            labels: National crop label per parcel (``EC_org_n``).
+            categories: Code-based classification of the same parcels.
+
+        Returns:
+            Corrected categories, aligned with the inputs.
+        """
+        result = categories.to_numpy(dtype=object, copy=True)
+        clean_codes = codes.astype("string").str.strip()
+        clean_labels = labels.astype("string").map(
+            _normalise_label, na_action="ignore"
+        )
+        for override in self._overrides:
+            mask = (clean_codes == override.hcat_code) & (
+                clean_labels == _normalise_label(override.original_label)
+            )
+            result[mask.fillna(False).to_numpy(dtype=bool)] = override.category
+        return pd.Series(result, index=categories.index, dtype=object)
+
+
 def is_agricultural(land_cover: pd.Series, categories: pd.Series) -> pd.Series:
     """Flag parcels that count as irrigable agricultural land.
 
@@ -188,24 +292,72 @@ def _parse_rules(lines: Iterable[str]) -> Iterable[HcatRule]:
         DataValidationError: If a column is missing or a category is unknown.
     """
     reader = csv.DictReader(lines)
-    required = {"hcat_prefix", "category", "label", "rationale"}
-    missing = required - set(reader.fieldnames or ())
-    if missing:
-        raise DataValidationError(f"Mapping CSV lacks columns: {sorted(missing)}.")
-    valid = {member.value for member in CropCategory} | {EXCLUDED_TOKEN}
+    _require_columns(reader, {"hcat_prefix", "category", "label", "rationale"})
     for row in reader:
-        token = row["category"].strip()
-        if token not in valid:
-            raise DataValidationError(
-                f"Unknown category {token!r} for prefix {row['hcat_prefix']!r}; "
-                f"expected one of {sorted(valid)}."
-            )
         yield HcatRule(
             prefix=row["hcat_prefix"].strip(),
-            category=None if token == EXCLUDED_TOKEN else CropCategory(token),
+            category=_parse_category(row["category"], row["hcat_prefix"]),
             label=row["label"].strip(),
             rationale=row["rationale"].strip(),
         )
+
+
+def _read_text(path: str | Path | None, resource: str) -> str:
+    """Read a CSV from ``path``, or from the packaged resource if ``path`` is None.
+
+    Args:
+        path: Explicit file path, or None for the packaged resource.
+        resource: File name inside ``dss/resources``.
+
+    Returns:
+        The file content.
+    """
+    if path is None:
+        return (resources.files("dss") / "resources" / resource).read_text(
+            encoding="utf-8"
+        )
+    return Path(path).read_text(encoding="utf-8")
+
+
+def _require_columns(reader: csv.DictReader[str], required: set[str]) -> None:
+    """Raise if a CSV lacks required columns.
+
+    Raises:
+        DataValidationError: If a required column is missing.
+    """
+    missing = required - set(reader.fieldnames or ())
+    if missing:
+        raise DataValidationError(f"CSV lacks columns: {sorted(missing)}.")
+
+
+def _parse_category(token: str, context: str) -> CropCategory | None:
+    """Parse a category token from a CSV row.
+
+    Args:
+        token: Archetype value (e.g. ``"10"``) or ``EXCLUDED``.
+        context: Row identifier used in the error message.
+
+    Returns:
+        The archetype, or ``None`` for ``EXCLUDED``.
+
+    Raises:
+        DataValidationError: If the token is unknown.
+    """
+    token = token.strip()
+    if token == EXCLUDED_TOKEN:
+        return None
+    try:
+        return CropCategory(token)
+    except ValueError:
+        valid = sorted({member.value for member in CropCategory} | {EXCLUDED_TOKEN})
+        raise DataValidationError(
+            f"Unknown category {token!r} for {context!r}; expected one of {valid}."
+        ) from None
+
+
+def _normalise_label(label: str) -> str:
+    """Normalise a national crop label for matching (NFC, trimmed, upper case)."""
+    return unicodedata.normalize("NFC", label).strip().upper()
 
 
 def _normalise_code(code: object) -> str | None:

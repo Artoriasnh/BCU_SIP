@@ -16,6 +16,8 @@ from dss.taxonomy import (
     AGRICULTURAL_LAND_COVER,
     HcatClassifier,
     HcatRule,
+    LabelOverride,
+    LabelOverrides,
     is_agricultural,
 )
 
@@ -134,3 +136,68 @@ class TestAgriculturalFilter:
     def test_missing_land_cover_is_not_agricultural(self):
         result = is_agricultural(pd.Series([None]), pd.Series([CropCategory.CEREALS]))
         assert result.tolist() == [False]
+
+
+@pytest.fixture
+def overrides():
+    return LabelOverrides.from_csv()
+
+
+class TestLabelOverrides:
+    def test_packaged_table_loads_with_rationales(self, overrides):
+        assert len(overrides.overrides) >= 1
+        assert all(o.rationale for o in overrides.overrides)
+
+    def test_packaged_corrections(self, overrides, classifier):
+        cases = [
+            ("3303030000", "PINHÃO", None),
+            ("3303030000", "NOZ", CropCategory.ORCHARDS),  # same code, untouched
+            ("3302000000", "MEDRONHO", CropCategory.ORCHARDS),
+            ("3301070000", "OUTRAS LEGUMINOSAS SECAS", CropCategory.FALLBACK),
+            ("3303030000", "AMENDOIM", CropCategory.FALLBACK),
+        ]
+        codes = pd.Series([c for c, _, _ in cases], dtype="string")
+        labels = pd.Series([lbl for _, lbl, _ in cases])
+        result = overrides.apply(codes, labels, classifier.classify_series(codes))
+        assert result.tolist() == [expected for _, _, expected in cases]
+
+    def test_label_matching_ignores_case_whitespace_and_unicode_form(
+        self, overrides, classifier
+    ):
+        decomposed = unicodedata.normalize("NFD", " pinhão ")
+        codes = pd.Series(["3303030000"], dtype="string")
+        result = overrides.apply(
+            codes, pd.Series([decomposed]), classifier.classify_series(codes)
+        )
+        assert result.tolist() == [None]
+
+    def test_missing_label_is_left_unchanged(self, overrides, classifier):
+        codes = pd.Series(["3303030000"], dtype="string")
+        result = overrides.apply(
+            codes, pd.Series([None]), classifier.classify_series(codes)
+        )
+        assert result.tolist() == [CropCategory.ORCHARDS]
+
+    def test_empty_table_changes_nothing(self, classifier):
+        codes = pd.Series(["3303030000"], dtype="string")
+        before = classifier.classify_series(codes)
+        after = LabelOverrides().apply(codes, pd.Series(["PINHÃO"]), before)
+        assert after.tolist() == before.tolist()
+
+    def test_duplicate_key_rejected(self):
+        override = LabelOverride("3303030000", "PINHÃO", None, "x")
+        with pytest.raises(DataValidationError, match="Duplicate"):
+            LabelOverrides([override, override])
+
+    def test_malformed_code_rejected(self):
+        with pytest.raises(DataValidationError, match="10 digits"):
+            LabelOverrides([LabelOverride("3303", "PINHÃO", None, "x")])
+
+    def test_unknown_category_rejected(self, tmp_path):
+        path = tmp_path / "overrides.csv"
+        path.write_text(
+            "hcat_code,original_label,category,rationale\n3303030000,X,99,y\n",
+            encoding="utf-8",
+        )
+        with pytest.raises(DataValidationError, match="Unknown category"):
+            LabelOverrides.from_csv(path)

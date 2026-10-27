@@ -135,6 +135,7 @@ def _as_category(
     Raises:
         DataValidationError: If ``key`` is not a known archetype.
     """
+    category: CropCategory | None
     try:
         category = CropCategory(key)
     except ValueError:

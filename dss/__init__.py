@@ -6,6 +6,7 @@ Modules:
     spatial: Task 1, parcel ingestion and command-zone clustering.
     solar: Task 2, NASA POWER solar climatology.
     hydraulics: Task 2, water demand and required pump power.
+    energy: Task 3, pump selection and PV energy balance.
 
 Geospatial classes are imported lazily, so ``dss.taxonomy`` works without the
 geospatial stack.
@@ -15,6 +16,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from dss.energy import (
+    EnergyBalance,
+    EnergyBasis,
+    PumpSelection,
+    PumpStrategy,
+    energy_balance,
+    monthly_energy_balance,
+    select_pumps,
+    surplus_threshold_psh,
+)
 from dss.exceptions import (
     DataValidationError,
     DSSError,
@@ -36,14 +47,22 @@ __all__ = [
     "DSSError",
     "DataValidationError",
     "EmptyClusterError",
+    "EnergyBalance",
+    "EnergyBasis",
     "HcatClassifier",
     "HydraulicDemand",
     "NasaPowerClient",
     "ParcelCluster",
     "ParcelLayer",
+    "PumpSelection",
+    "PumpStrategy",
     "SolarClimatology",
     "SolarDataError",
+    "energy_balance",
+    "monthly_energy_balance",
+    "select_pumps",
     "size_hydraulics",
+    "surplus_threshold_psh",
 ]
 
 __version__ = "0.1.0"

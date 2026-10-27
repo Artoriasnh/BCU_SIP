@@ -48,11 +48,15 @@ def _box(dx0: float, dy0: float, dx1: float, dy1: float) -> Polygon:
     return box(x0 + dx0, y0 + dy0, x0 + dx1, y0 + dy1)
 
 
-def _layer_frame(records: list[tuple[str, str, str, Polygon]]) -> gpd.GeoDataFrame:
+def _layer_frame(
+    records: list[tuple[str, str, str, Polygon]], labels: list[str] | None = None
+) -> gpd.GeoDataFrame:
+    """Build a source-schema layer; the national label defaults to the name."""
     return gpd.GeoDataFrame(
         {
             SourceColumns.HCAT_CODE: [r[1] for r in records],
             SourceColumns.HCAT_NAME: [r[0] for r in records],
+            SourceColumns.ORIGINAL_LABEL: labels or [r[0] for r in records],
             SourceColumns.LAND_COVER: [r[2] for r in records],
             SourceColumns.DECLARED_AREA_M2: [r[3].area for r in records],
         },
@@ -179,6 +183,70 @@ class TestInputValidation:
     def test_invalid_config(self, kwargs):
         with pytest.raises(ValueError):
             SpatialConfig(**kwargs)
+
+
+class TestWithConfig:
+    def test_shares_parcels_and_applies_new_radius(self, layer):
+        wider = layer.with_config(SpatialConfig(buffer_radius_m=300.0))
+        assert wider.parcels is layer.parcels
+        cluster = wider.extract_cluster(WELL_LAT, WELL_LON)
+        disc_300_ha = math.pi * 300.0**2 / 10_000
+        olive = cluster.parcels.set_index(ParcelColumns.HCAT_NAME).loc["B_olive"]
+        assert olive[ParcelColumns.AREA_CLIPPED_HA] == pytest.approx(
+            disc_300_ha / 2, rel=REL_TOL
+        )
+
+    def test_rejects_different_metric_crs(self, layer):
+        with pytest.raises(DataValidationError, match="metric CRS"):
+            layer.with_config(SpatialConfig(metric_crs="EPSG:32629"))
+
+
+class TestLabelOverrides:
+    def test_override_matches_code_and_label(self, classifier):
+        frame = _layer_frame(
+            [
+                ("stone_pine", "3303030000", AGRI, _box(-60, -20, -20, 20)),
+                ("walnut", "3303030000", AGRI, _box(20, -20, 60, 20)),
+            ],
+            labels=["PINHÃO", "NOZ"],
+        )
+        cluster = ParcelLayer(frame, classifier=classifier).extract_cluster(
+            WELL_LAT, WELL_LON
+        )
+        # Same HCAT code: stone-pine stands are excluded, walnut stays an orchard.
+        assert cluster.parcels[ParcelColumns.HCAT_NAME].tolist() == ["walnut"]
+        assert cluster.categories == {CropCategory.ORCHARDS}
+
+    def test_overrides_can_be_disabled(self, classifier):
+        from dss.taxonomy import LabelOverrides
+
+        frame = _layer_frame(
+            [("stone_pine", "3303030000", AGRI, _box(-60, -20, -20, 20))],
+            labels=["PINHÃO"],
+        )
+        layer = ParcelLayer(frame, classifier=classifier, overrides=LabelOverrides())
+        assert layer.extract_cluster(WELL_LAT, WELL_LON).n_parcels == 1
+
+
+class TestEdgeCases:
+    def test_config_is_exposed(self, layer):
+        assert layer.config.buffer_radius_m == RADIUS_M
+
+    def test_missing_file(self, tmp_path):
+        with pytest.raises(FileNotFoundError, match="zenodo"):
+            ParcelLayer.from_file(tmp_path / "missing.shp")
+
+    def test_parcels_without_geometry_are_dropped(self, synthetic_frame, classifier):
+        frame = synthetic_frame.copy()
+        frame.loc[frame.index[0], frame.geometry.name] = None  # A_cereal
+        cluster = ParcelLayer(frame, classifier=classifier).extract_cluster(
+            WELL_LAT, WELL_LON
+        )
+        assert sorted(cluster.parcels[ParcelColumns.HCAT_NAME]) == ["B_olive"]
+
+    def test_antipode_raises_empty_cluster(self, layer):
+        with pytest.raises(EmptyClusterError):
+            layer.extract_cluster(-38.5, 172.0)  # New Zealand
 
 
 class TestRobustness:

@@ -29,7 +29,8 @@ pytestmark = [
 # Locations used in the brief and in the submission notebook.
 LISBON = (38.722, -9.139)  # urban centre: brief expects EmptyClusterError
 BRIEF_ALENTEJO = (38.015, -7.865)  # brief's "valid" example; see test below
-ALENTEJO_ALT = (38.2285, -7.8211)  # nearest well-populated cluster we found
+# Demonstration site selected by rule in evaluation/task1_spatial.py.
+DEMO_SITE = (38.07759, -7.96330)
 DISC_HA = math.pi * 150.0**2 / 10_000
 
 
@@ -65,10 +66,10 @@ def test_brief_alentejo_point_is_empty_in_this_sample(layer):
         layer.extract_cluster(*BRIEF_ALENTEJO)
 
 
-def test_alternative_alentejo_point_succeeds(layer):
-    cluster = layer.extract_cluster(*ALENTEJO_ALT)
-    assert cluster.n_parcels >= 1
-    assert cluster.categories <= {CropCategory.PASTURES, CropCategory.ORCHARDS}
+def test_demonstration_site_succeeds(layer):
+    cluster = layer.extract_cluster(*DEMO_SITE)
+    assert cluster.n_parcels == 3
+    assert cluster.categories == {CropCategory.CEREALS, CropCategory.FALLBACK}
     assert 0 < cluster.total_area_clipped_ha <= DISC_HA
     assert cluster.total_area_full_ha >= cluster.total_area_clipped_ha
 
@@ -76,5 +77,5 @@ def test_alternative_alentejo_point_succeeds(layer):
 def test_query_is_fast_once_layer_is_loaded(layer):
     start = time.perf_counter()
     for _ in range(10):
-        layer.extract_cluster(*ALENTEJO_ALT)
+        layer.extract_cluster(*DEMO_SITE)
     assert (time.perf_counter() - start) / 10 < 1.0  # seconds per query

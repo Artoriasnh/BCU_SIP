@@ -1,0 +1,5 @@
+hcat_code,original_label,category,rationale
+3303030000,PINHÃO,EXCLUDED,"Stone-pine (Pinus pinea) nut stands: a largely rainfed agro-silvo-pastoral system, like the cork-oak montado that is already excluded; not an irrigated orchard."
+3302000000,MEDRONHO,20,"Strawberry tree (Arbutus unedo) is a perennial fruit shrub, harmonised by EuroCrops as grassland; reassigned to orchards and fruits."
+3301070000,OUTRAS LEGUMINOSAS SECAS,OTHER,"'Other dry pulses' harmonised by EuroCrops as fresh vegetables; pulses belong to the fallback archetype ('Mixed / Pulses')."
+3303030000,AMENDOIM,OTHER,"Peanut is an annual legume, harmonised by EuroCrops as tree nuts; reassigned to the fallback archetype."

@@ -63,3 +63,34 @@ CROP_ARCHETYPES: Final[dict[CropCategory, CropArchetype]] = {
                       "Mixed / Pulses", 30.0, 5.0, 0.30),
     )
 }
+
+
+@dataclass(frozen=True, slots=True)
+class PumpTier:
+    """One tier of the solar irrigation pump catalogue.
+
+    Attributes:
+        name: Tier label.
+        motor_kw: Rated motor power, kW.
+        pv_kwp: Dedicated PV capacity, kWp.
+        capex_usd: Installed capital cost, USD.
+        max_delivery_m3_day: Catalogue maximum delivery at 40 m head, m3/day.
+            Not reproducible from the brief's own hydraulic formula (see the
+            Task 2 evaluation); used for warnings only, never for selection.
+    """
+
+    name: str
+    motor_kw: float
+    pv_kwp: float
+    capex_usd: float
+    max_delivery_m3_day: float
+
+
+# Source: assessment brief, Section 3D "Reference Table 2: IDCOL Solar Irrigation
+# Pump Catalog". Ordered by motor power.
+PUMP_CATALOGUE: Final[tuple[PumpTier, ...]] = (
+    PumpTier("Tier 1", 3.7, 5.0, 7_500.0, 250.0),
+    PumpTier("Tier 2", 5.5, 7.5, 10_500.0, 400.0),
+    PumpTier("Tier 3", 7.5, 10.0, 14_000.0, 580.0),
+    PumpTier("Tier 4", 11.0, 15.0, 19_500.0, 850.0),
+)

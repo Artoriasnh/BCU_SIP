@@ -34,6 +34,22 @@ pytest                 # unit tests (integration tests auto-skip if data are mis
 ruff check . && mypy dss
 ```
 
+## Evaluation
+
+Each task has its own evaluation script, which writes a self-contained report
+(Markdown with figures and CSV tables) under `evaluation/results/<task>/`:
+
+```bash
+python -m evaluation.task1_spatial            # offline, ~1-2 min
+python -m evaluation.task2_solar_hydraulics   # needs internet (NASA POWER, PVGIS)
+pytest --cov=dss --cov-report=term-missing    # unit tests with coverage
+```
+
+| Report | Content |
+|---|---|
+| [Task 1](evaluation/results/task1/REPORT.md) | classification audit, geometric accuracy, robustness, performance, sensitivity, maps |
+| [Task 2](evaluation/results/task2/REPORT.md) | live NASA POWER checks, PVGIS cross-check, FAO-56 plausibility, pump catalogue, sensitivity, error handling |
+
 ## Repository layout
 
 ```
@@ -47,7 +63,10 @@ dss/                 Engine package (one module per concern)
   spatial.py         Task 1: parcel ingestion, buffering and clustering
   solar.py           Task 2: NASA POWER client (timeouts, retries, caching, units)
   hydraulics.py      Task 2: water demand and required pump power
-  resources/hcat_mapping.csv   Versioned HCAT mapping (single source of truth)
+  energy.py          Task 3: pump selection and PV energy balance
+  resources/hcat_mapping.csv      Versioned HCAT mapping (single source of truth)
+  resources/label_overrides.csv   Corrections of EuroCrops harmonisation errors
+evaluation/          One evaluation script per task, with generated reports
 tests/               pytest suite (unit, integration and optional live-API tests)
 ```
 

@@ -15,6 +15,7 @@ requests>=2.31,<3
 
 # --- Development: tests, linting, type checking, notebook ---
 pytest>=7.4
+pytest-cov>=4.1
 ruff>=0.4
 mypy>=1.8
 pandas-stubs

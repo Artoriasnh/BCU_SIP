@@ -13,12 +13,14 @@ water demand; see ASSUMPTIONS A3) and its whole-parcel area (``area_full_ha``).
 from __future__ import annotations
 
 import logging
+import math
 from dataclasses import dataclass
 from pathlib import Path
 
 import geopandas as gpd
 import pandas as pd
 import shapely
+from pyproj import Transformer
 from shapely.geometry import Point
 from shapely.geometry.base import BaseGeometry
 
@@ -26,7 +28,7 @@ from dss.config import DEFAULT_PARCELS_PATH, M2_PER_HA, SpatialConfig
 from dss.exceptions import DataValidationError, EmptyClusterError
 from dss.reference_tables import CropCategory
 from dss.schema import ParcelColumns, SourceColumns
-from dss.taxonomy import HcatClassifier, is_agricultural
+from dss.taxonomy import HcatClassifier, LabelOverrides, is_agricultural
 from dss.validation import validate_coordinates
 
 logger = logging.getLogger(__name__)
@@ -107,6 +109,7 @@ class ParcelLayer:
         parcels: gpd.GeoDataFrame,
         classifier: HcatClassifier | None = None,
         config: SpatialConfig | None = None,
+        overrides: LabelOverrides | None = None,
     ) -> None:
         """Prepare a parcel layer for clustering queries.
 
@@ -115,6 +118,7 @@ class ParcelLayer:
                 :attr:`dss.schema.SourceColumns.REQUIRED`, in any CRS.
             classifier: HCAT classifier. Defaults to the packaged mapping.
             config: Spatial parameters. Defaults to the brief's values.
+            overrides: Label-specific corrections. Defaults to the packaged table.
 
         Raises:
             DataValidationError: If the layer has no CRS or lacks a required
@@ -122,6 +126,10 @@ class ParcelLayer:
         """
         self._config = config or SpatialConfig()
         self._classifier = classifier or HcatClassifier.from_csv()
+        self._overrides = (
+            overrides if overrides is not None else LabelOverrides.from_csv()
+        )
+        self._to_metric, self._to_geographic = _transformers(self._config)
         self._parcels = self._prepare(parcels)
         # Build the R-tree now rather than lazily on the first query.
         _ = self._parcels.sindex
@@ -137,6 +145,7 @@ class ParcelLayer:
         path: str | Path = DEFAULT_PARCELS_PATH,
         classifier: HcatClassifier | None = None,
         config: SpatialConfig | None = None,
+        overrides: LabelOverrides | None = None,
     ) -> ParcelLayer:
         """Read a parcel layer from disk.
 
@@ -147,6 +156,7 @@ class ParcelLayer:
                 ``.zip``) containing the parcels.
             classifier: HCAT classifier. Defaults to the packaged mapping.
             config: Spatial parameters. Defaults to the brief's values.
+            overrides: Label-specific corrections. Defaults to the packaged table.
 
         Returns:
             A prepared, indexed parcel layer.
@@ -165,7 +175,7 @@ class ParcelLayer:
         parcels = gpd.read_file(
             path, columns=list(SourceColumns.REQUIRED), engine="pyogrio"
         )
-        return cls(parcels, classifier=classifier, config=config)
+        return cls(parcels, classifier=classifier, config=config, overrides=overrides)
 
     @property
     def parcels(self) -> gpd.GeoDataFrame:
@@ -176,6 +186,34 @@ class ParcelLayer:
     def config(self) -> SpatialConfig:
         """Spatial parameters in use."""
         return self._config
+
+    def with_config(self, config: SpatialConfig) -> ParcelLayer:
+        """Return a layer that shares the prepared parcels but uses other parameters.
+
+        Useful for sensitivity analysis or Monte Carlo runs, where re-reading and
+        reprojecting the national layer for every parameter set would be wasteful.
+
+        Args:
+            config: New spatial parameters; must use the same metric CRS.
+
+        Returns:
+            A new layer backed by the same (read-only) parcel table and index.
+
+        Raises:
+            DataValidationError: If ``config`` uses a different metric CRS.
+        """
+        if config.metric_crs != self._config.metric_crs:
+            raise DataValidationError(
+                "with_config cannot change the metric CRS of a prepared layer."
+            )
+        clone = object.__new__(ParcelLayer)
+        clone._config = config
+        clone._classifier = self._classifier
+        clone._overrides = self._overrides
+        clone._parcels = self._parcels
+        clone._to_metric = self._to_metric
+        clone._to_geographic = self._to_geographic
+        return clone
 
     def extract_cluster(self, lat: float, lon: float) -> ParcelCluster:
         """Extract the agricultural parcels inside the command-zone buffer.
@@ -194,12 +232,11 @@ class ParcelLayer:
         lat, lon = validate_coordinates(lat, lon)
         cfg = self._config
 
-        # Create the point in degrees, reproject to metres, and only then buffer.
-        point_metric = (
-            gpd.GeoSeries([Point(lon, lat)], crs=cfg.geographic_crs)
-            .to_crs(cfg.metric_crs)
-            .iloc[0]
-        )
+        # Project the point from degrees to metres, and only then buffer it.
+        x, y = self._to_metric.transform(lon, lat)
+        if not (math.isfinite(x) and math.isfinite(y)):
+            raise EmptyClusterError()  # outside the projection's domain
+        point_metric = Point(x, y)
         buffer = point_metric.buffer(
             cfg.buffer_radius_m, quad_segs=cfg.buffer_quad_segs
         )
@@ -285,9 +322,16 @@ class ParcelLayer:
         layer[ParcelColumns.HCAT_CODE] = (
             layer[ParcelColumns.HCAT_CODE].astype("string").str.strip()
         )
-        layer[ParcelColumns.CATEGORY] = self._classifier.classify_series(
-            layer[ParcelColumns.HCAT_CODE]
+        by_code = self._classifier.classify_series(layer[ParcelColumns.HCAT_CODE])
+        layer[ParcelColumns.CATEGORY] = self._overrides.apply(
+            layer[ParcelColumns.HCAT_CODE], layer[ParcelColumns.ORIGINAL_LABEL], by_code
         )
+        # Identity comparison: categories are enum singletons or None.
+        n_overridden = sum(
+            old is not new
+            for old, new in zip(by_code, layer[ParcelColumns.CATEGORY], strict=True)
+        )
+        logger.info("Label overrides changed the category of %d parcels.", n_overridden)
         layer[ParcelColumns.DECLARED_AREA_HA] = (
             pd.to_numeric(layer[SourceColumns.DECLARED_AREA_M2], errors="coerce")
             / M2_PER_HA
@@ -305,6 +349,7 @@ class ParcelLayer:
         columns = [
             ParcelColumns.HCAT_CODE,
             ParcelColumns.HCAT_NAME,
+            ParcelColumns.ORIGINAL_LABEL,
             ParcelColumns.LAND_COVER,
             ParcelColumns.CATEGORY,
             ParcelColumns.DECLARED_AREA_HA,
@@ -325,10 +370,16 @@ class ParcelLayer:
             Latitude and longitude of the centroid, decimal degrees.
         """
         centroid = shapely.union_all(geometries.values).centroid
-        centroid_deg = (
-            gpd.GeoSeries([centroid], crs=self._config.metric_crs)
-            .to_crs(self._config.geographic_crs)
-            .iloc[0]
-        )
-        return float(centroid_deg.y), float(centroid_deg.x)
+        lon, lat = self._to_geographic.transform(centroid.x, centroid.y)
+        return float(lat), float(lon)
 
+
+def _transformers(config: SpatialConfig) -> tuple[Transformer, Transformer]:
+    """Coordinate transformers (geographic -> metric, metric -> geographic).
+
+    ``always_xy=True`` fixes the axis order to (lon, lat) / (easting, northing).
+    """
+    return (
+        Transformer.from_crs(config.geographic_crs, config.metric_crs, always_xy=True),
+        Transformer.from_crs(config.metric_crs, config.geographic_crs, always_xy=True),
+    )

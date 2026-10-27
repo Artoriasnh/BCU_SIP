@@ -1,0 +1,221 @@
+final_status,hcat_code,hcat_name,original_label,land_cover,code_category,parcels,area_ha
+10,3301010600,grain_maize_corn_popcorn,MILHO,Superfície agrícola,10,4307,1288.1688
+10,3301010500,oats,AVEIA,Superfície agrícola,10,932,645.8753
+10,3301010300,rye,CENTEIO,Superfície agrícola,10,273,117.2976
+10,3301010700,rice,ARROZ,Superfície agrícola,10,264,279.4582
+10,3301010100,common_soft_wheat,TRIGO,Superfície agrícola,10,182,186.0478
+10,3301019900,other_cereals,OUTROS CEREAIS,Superfície agrícola,10,117,28.7665
+10,3301010900,millet_sorghum,SORGO,Superfície agrícola,10,95,110.79039999999999
+10,3301010400,barley,CEVADA,Superfície agrícola,10,68,94.6696
+10,3301010600,grain_maize_corn_popcorn,MILHO;OUTRAS HORTÍCOLAS,Superfície agrícola,10,53,16.9305
+10,3301010600,grain_maize_corn_popcorn,MILHO;BATATA,Superfície agrícola,10,51,10.9054
+10,3301010800,triticale,TRITICALE,Superfície agrícola,10,29,130.3373
+10,3301010600,grain_maize_corn_popcorn,MILHO;FEIJÃO,Superfície agrícola,10,17,2.9261
+10,3301010600,grain_maize_corn_popcorn,MILHO;BATATA;OUTRAS HORTÍCOLAS,Superfície agrícola,10,12,6.8564
+10,3301010600,grain_maize_corn_popcorn,MILHO;CONSOCIAÇÕES ANUAIS E OUTRAS CULT. FORRAG. ANUAIS,Superfície agrícola,10,8,5.809
+10,3301010600,grain_maize_corn_popcorn,MILHO;OUTRAS HORTÍCOLAS;BATATA,Superfície agrícola,10,7,3.9208000000000003
+10,3301010600,grain_maize_corn_popcorn,MILHO;AVEIA,Superfície agrícola,10,3,1.4739
+10,3301019900,other_cereals,OUTROS CEREAIS;MILHO,Superfície agrícola,10,3,4.9051
+10,3301010100,common_soft_wheat,TRIGO;MILHO,Superfície agrícola,10,2,0.4981
+10,3301010100,common_soft_wheat,TRIGO;OUTRAS HORTÍCOLAS,Superfície agrícola,10,2,1.1478
+10,3301010300,rye,CENTEIO;MILHO,Superfície agrícola,10,2,1.127
+10,3301010600,grain_maize_corn_popcorn,MILHO;OUTRAS HORTÍCOLAS;CONSOCIAÇÕES ANUAIS E OUTRAS CULT. FORRAG. ANUAIS,Superfície agrícola,10,2,1.5401
+10,3301010600,grain_maize_corn_popcorn,MILHO;PRADOS TEMPORÁRIOS,Superfície agrícola,10,2,0.4474
+10,3301019900,other_cereals,OUTROS CEREAIS;OUTRAS HORTÍCOLAS,Superfície agrícola,10,2,0.1321
+10,3301010100,common_soft_wheat,TRIGO;CONSOCIAÇÕES ANUAIS E OUTRAS CULT. FORRAG. ANUAIS,Superfície agrícola,10,1,1.0387
+10,3301010100,common_soft_wheat,TRIGO;COUVE,Superfície agrícola,10,1,3.4681
+10,3301010100,common_soft_wheat,TRIGO;MELÃO,Superfície agrícola,10,1,2.3307
+10,3301010100,common_soft_wheat,TRIGO;MILHO;OUTRAS HORTÍCOLAS,Superfície agrícola,10,1,0.5498
+10,3301010100,common_soft_wheat,TRIGO;TREMOÇO,Superfície agrícola,10,1,0.4498
+10,3301010300,rye,CENTEIO;BATATA,Superfície agrícola,10,1,0.4397
+10,3301010300,rye,CENTEIO;CONSOCIAÇÕES ANUAIS E OUTRAS CULT. FORRAG. ANUAIS,Superfície agrícola,10,1,1.054
+10,3301010300,rye,CENTEIO;MILHO;BATATA,Superfície agrícola,10,1,0.4054
+10,3301010300,rye,CENTEIO;MILHO;FEIJÃO;BATATA;OUTRAS HORTÍCOLAS,Superfície agrícola,10,1,0.553
+10,3301010300,rye,CENTEIO;MILHO;OUTRAS HORTÍCOLAS;BATATA,Superfície agrícola,10,1,0.8821
+10,3301010300,rye,CENTEIO;OUTRAS HORTÍCOLAS;BATATA,Superfície agrícola,10,1,0.1299
+10,3301010300,rye,CENTEIO;SORGO,Superfície agrícola,10,1,5.5151
+10,3301010400,barley,CEVADA;AZEVEM,Superfície agrícola,10,1,0.4692
+10,3301010500,oats,AVEIA;CONSOCIAÇÕES ANUAIS E OUTRAS CULT. FORRAG. ANUAIS,Superfície agrícola,10,1,0.4261
+10,3301010500,oats,AVEIA;FAVA,Superfície agrícola,10,1,0.5035
+10,3301010600,grain_maize_corn_popcorn,MILHO;AZEVEM,Superfície agrícola,10,1,0.4898
+10,3301010600,grain_maize_corn_popcorn,MILHO;AZEVEM;OUTRAS HORTÍCOLAS,Superfície agrícola,10,1,0.5106
+10,3301010600,grain_maize_corn_popcorn,MILHO;BATATA;AVEIA,Superfície agrícola,10,1,0.2177
+10,3301010600,grain_maize_corn_popcorn,MILHO;BATATA;CEBOLA,Superfície agrícola,10,1,0.4436
+10,3301010600,grain_maize_corn_popcorn,MILHO;BATATA;OUTRAS HORTÍCOLAS;AVEIA,Superfície agrícola,10,1,1.0405
+10,3301010600,grain_maize_corn_popcorn,MILHO;COUVE,Superfície agrícola,10,1,2.7564
+10,3301010600,grain_maize_corn_popcorn,MILHO;FAVA,Superfície agrícola,10,1,0.2988
+10,3301010600,grain_maize_corn_popcorn,MILHO;FEIJÃO;BATATA,Superfície agrícola,10,1,0.0835
+10,3301010600,grain_maize_corn_popcorn,MILHO;FEIJÃO;BATATA;CONSOCIAÇÕES ANUAIS E OUTRAS CULT. FORRAG. ANUAIS,Superfície agrícola,10,1,0.6567
+10,3301010600,grain_maize_corn_popcorn,MILHO;FEIJÃO;OUTRAS HORTÍCOLAS;BATATA;CONSOCIAÇÕES ANUAIS E OUTRAS CULT. FORRAG. ANUAIS,Superfície agrícola,10,1,0.5368
+10,3301010600,grain_maize_corn_popcorn,MILHO;OUTRAS HORTÍCOLAS;AVEIA,Superfície agrícola,10,1,0.4103
+10,3301010600,grain_maize_corn_popcorn,MILHO;POUSIO,Superfície agrícola,10,1,5.5322
+10,3301010600,grain_maize_corn_popcorn,MILHO;TREMOÇO,Superfície agrícola,10,1,0.1841
+10,3301019900,other_cereals,OUTROS CEREAIS;COUVE;OUTRAS HORTÍCOLAS;CEBOLA,Superfície agrícola,10,1,0.8287
+10,3301019900,other_cereals,OUTROS CEREAIS;FEIJÃO,Superfície agrícola,10,1,0.344
+10,3301019900,other_cereals,OUTROS CEREAIS;OUTRAS HORTÍCOLAS;BATATA,Superfície agrícola,10,1,0.4219
+20,3303050000,olive_plantations,OLIVAL,Superfície agrícola,20,18712,13202.5624
+20,3303060000,vineyards_wine_vine_rebland_grapes,VINHA,Superfície agrícola,20,5363,3767.4004
+20,3303030500,sweet_chestnuts,CASTANHA,Superfície agrícola,20,3706,1267.5230999999999
+20,3303120000,unspecified_permanent_crops,MISTO CULTURAS PERMANENTES,Superfície agrícola,20,820,464.5601
+20,3303011200,pears,PERA,Superfície agrícola,20,558,481.1627
+20,3303010000,orchards_fruits,OUTRAS FRUTOS FRESCOS,Superfície agrícola,20,364,65.2043
+20,3303030100,almond,AMENDOA,Superfície agrícola,20,345,218.7614
+20,3303010200,apples,MAÇÃ,Superfície agrícola,20,332,248.3201
+20,3303040000,citrus_plantations,LARANJA,Superfície agrícola,20,201,54.0859
+20,3303010400,cherry_cherries,CEREJA,Superfície agrícola,20,151,73.3794
+20,3303030000,nuts,NOZ,Superfície agrícola,20,145,70.7534
+20,3303000000,permanent_crops_perennial,CABECEIRAS CULT. PERMANENTES - ÁREA ÚTIL,Superfície agrícola,20,103,6.0985
+20,3303010700,kiwi,KIWI,Superfície agrícola,20,97,88.30499999999999
+20,3303011100,peach,PÊSSEGO,Superfície agrícola,20,58,60.0168
+20,3303010000,orchards_fruits,OUTROS PEQUENOS FRUTOS,Superfície agrícola,20,50,8.0342
+20,3303011300,plums,AMEIXA,Superfície agrícola,20,39,24.092
+20,3303040000,citrus_plantations,OUTROS CITRINOS,Superfície agrícola,20,34,8.6738
+20,3303010000,orchards_fruits,OUTROS FRUTOS SECOS,Superfície agrícola,20,22,4.904
+20,3303040000,citrus_plantations,LIMÃO,Superfície agrícola,20,20,12.4682
+20,3303020400,blueberry,MIRTILO,Superfície agrícola,20,19,15.181899999999999
+20,3303010600,fig,FIGO,Superfície agrícola,20,18,9.4587
+20,3303030200,hazelnuts_hazel,AVELÃ,Superfície agrícola,20,12,8.0402
+20,3303011500,quinces,MARMELO,Superfície agrícola,20,11,11.7828
+20,3303010600,fig,FIGO DA INDIA,Superfície agrícola,20,9,16.8541
+20,3302000000,pasture_meadow_grassland_grass,MEDRONHO,Superfície agrícola,30,8,10.8093
+20,3303010000,orchards_fruits,DIOSPIRO,Superfície agrícola,20,6,1.6828
+20,3303990000,other_permanent_crops_plantations,OUTRAS CULTURAS PERMANENTES,Superfície agrícola,20,5,0.2679
+20,3303010000,orchards_fruits,OUTROS FRUTOS SUB-TROPICAIS,Superfície agrícola,20,4,0.7977
+20,3303010300,apricots,DAMASCO,Superfície agrícola,20,4,2.0274
+20,3303070000,nurseries_nursery,VIVEIROS,Superfície agrícola,20,4,1.2758
+20,3303011400,pomegranate,ROMÃ,Superfície agrícola,20,3,7.0112000000000005
+20,3303010400,cherry_cherries,GINJA,Superfície agrícola,20,2,0.6184000000000001
+20,3303021000,raspberry_raspberries,FRAMBOESA,Superfície agrícola,20,2,1.1246
+20,3303030400,pistachio,PISTACIOS,Superfície agrícola,20,2,8.0475
+20,3303100000,avocado,ABACATE,Superfície agrícola,20,2,0.41859999999999997
+20,3303020200,blackberry,AMORA,Superfície agrícola,20,1,0.9815
+30,3302000000,pasture_meadow_grassland_grass,PASTAGENS PERMANENTES,Superfície agrícola,30,10358,26044.1209
+30,3302000000,pasture_meadow_grassland_grass,PASTAGENS ARBUSTIVAS,Superfície agrícola,30,6108,5478.2987
+30,3301090100,temporary_grass,PRADOS TEMPORÁRIOS,Superfície agrícola,30,4218,5306.671
+30,3301090205,lolium_ryegrass,AZEVEM,Superfície agrícola,30,336,260.9764
+30,3301090301,alfalfa_lucerne,LUZERNA,Superfície agrícola,30,13,8.5686
+30,3301090100,temporary_grass,PRADOS TEMPORÁRIOS;OUTRAS HORTÍCOLAS,Superfície agrícola,30,5,0.9297
+30,3301090303,clover,TREVO,Superfície agrícola,30,3,35.9918
+30,3301090100,temporary_grass,PRADOS TEMPORÁRIOS;CONSOCIAÇÕES ANUAIS E OUTRAS CULT. FORRAG. ANUAIS,Superfície agrícola,30,2,51.5766
+30,3301090205,lolium_ryegrass,AZEVEM;BATATA,Superfície agrícola,30,2,0.3877
+30,3301090205,lolium_ryegrass,AZEVEM;OUTRAS HORTÍCOLAS,Superfície agrícola,30,1,0.0675
+30,3301090300,legumes_harvested_green,SERRADELA,Superfície agrícola,30,1,2.8839
+50,3301070000,fresh_vegetables,OUTRAS HORTÍCOLAS,Superfície agrícola,50,1923,278.6173
+50,3301030000,potatoes,BATATA,Superfície agrícola,50,488,204.7511
+50,3301140400,pumpkin_squash_gourd,ABÓBORAS E ABOBORINHAS,Superfície agrícola,50,223,82.021
+50,3301210200,brassica_oleracea_cabbage,COUVE,Superfície agrícola,50,70,39.164
+50,3301280000,tomato,TOMATE,Superfície agrícola,50,70,226.9695
+50,3301030000,potatoes,BATATA;OUTRAS HORTÍCOLAS,Superfície agrícola,50,24,3.0339
+50,3301290800,turnips,NABO,Superfície agrícola,50,21,15.8984
+50,3301070000,fresh_vegetables,OUTRAS HORTÍCOLAS;BATATA,Superfície agrícola,50,20,2.7734
+50,3301290300,carrots_daucus,CENOURA,Superfície agrícola,50,18,87.3918
+50,3301220400,onions,CEBOLA,Superfície agrícola,50,15,31.8266
+50,3301040000,sweet_potatoes,BATATA DOCE,Superfície agrícola,50,12,9.1756
+50,3301061200,aromatic_medicinal_culinary_plants_spices_herbs,"PLANTAS AROM., MEDICINAIS E CONDIMENTARES",Superfície agrícola,50,10,6.4135
+50,3301080000,flowers_ornamental_plants,FLORES E PLANTAS ORNAMENTAIS,Superfície agrícola,50,7,3.979
+50,3301140400,pumpkin_squash_gourd,ABÓBORAS E ABOBORINHAS;MILHO,Superfície agrícola,50,7,1.9278
+50,3301070000,fresh_vegetables,OUTRAS HORTÍCOLAS;AVEIA,Superfície agrícola,50,6,4.665699999999999
+50,3301140300,melon,MELÃO,Superfície agrícola,50,6,4.3876
+50,3301140400,pumpkin_squash_gourd,ABÓBORAS E ABOBORINHAS;BATATA,Superfície agrícola,50,6,1.9720000000000002
+50,3301030000,potatoes,BATATA;CEBOLA,Superfície agrícola,50,5,1.8133
+50,3301030000,potatoes,BATATA;CONSOCIAÇÕES ANUAIS E OUTRAS CULT. FORRAG. ANUAIS,Superfície agrícola,50,5,0.9392
+50,3301310000,salads_lettuce_leaf_vegetables,ALFACE,Superfície agrícola,50,5,2.8774999999999995
+50,3301070000,fresh_vegetables,OUTRAS HORTÍCOLAS;CONSOCIAÇÕES ANUAIS E OUTRAS CULT. FORRAG. ANUAIS,Superfície agrícola,50,4,2.5046
+50,3301140600,zucchini_courgette,COURGETTE,Superfície agrícola,50,4,1.7589
+50,3301220200,garlic,ALHO FRANCÊS,Superfície agrícola,50,4,1.2122
+50,3301030000,potatoes,BATATA;AVEIA,Superfície agrícola,50,3,0.6388
+50,3301061228,piper_pepper,PIMENTO,Superfície agrícola,50,3,1.8674
+50,3301130000,strawberries,MORANGO,Superfície agrícola,50,3,0.47409999999999997
+50,3301140400,pumpkin_squash_gourd,ABÓBORAS E ABOBORINHAS;OUTRAS HORTÍCOLAS,Superfície agrícola,50,3,0.2623
+50,3301290800,turnips,NABIÇA,Superfície agrícola,50,3,0.1701
+50,3301140400,pumpkin_squash_gourd,ABÓBORAS E ABOBORINHAS;AVEIA,Superfície agrícola,50,2,0.21839999999999998
+50,3301140500,watermelon,MELANCIA,Superfície agrícola,50,2,1.9821
+50,3301030000,potatoes,BATATA;OUTRAS HORTÍCOLAS;AVEIA,Superfície agrícola,50,1,0.3791
+50,3301040000,sweet_potatoes,BATATA DOCE;BATATA,Superfície agrícola,50,1,0.0784
+50,3301040000,sweet_potatoes,BATATA DOCE;FEIJÃO,Superfície agrícola,50,1,0.6424
+50,3301040000,sweet_potatoes,BATATA DOCE;MILHO,Superfície agrícola,50,1,0.1697
+50,3301040000,sweet_potatoes,BATATA DOCE;MILHO;COURGETTE,Superfície agrícola,50,1,9.8334
+50,3301070000,fresh_vegetables,OUTRAS HORTÍCOLAS;BATATA;CONSOCIAÇÕES ANUAIS E OUTRAS CULT. FORRAG. ANUAIS,Superfície agrícola,50,1,0.1678
+50,3301070000,fresh_vegetables,OUTRAS HORTÍCOLAS;CEBOLA,Superfície agrícola,50,1,0.109
+50,3301070000,fresh_vegetables,OUTRAS HORTÍCOLAS;FAVA,Superfície agrícola,50,1,0.1467
+50,3301070000,fresh_vegetables,OUTRAS HORTÍCOLAS;TREMOÇO,Superfície agrícola,50,1,0.9348
+50,3301080000,flowers_ornamental_plants,FLORES E PLANTAS ORNAMENTAIS;MILHO;BATATA;OUTRAS HORTÍCOLAS,Superfície agrícola,50,1,4.0422
+50,3301140300,melon,MELÃO;OUTRAS HORTÍCOLAS;CONSOCIAÇÕES ANUAIS E OUTRAS CULT. FORRAG. ANUAIS,Superfície agrícola,50,1,0.4953
+50,3301140400,pumpkin_squash_gourd,ABÓBORAS E ABOBORINHAS;BATATA;OUTRAS HORTÍCOLAS,Superfície agrícola,50,1,0.3075
+50,3301140400,pumpkin_squash_gourd,ABÓBORAS E ABOBORINHAS;CEBOLA,Superfície agrícola,50,1,1.3513
+50,3301140400,pumpkin_squash_gourd,ABÓBORAS E ABOBORINHAS;GRÃO DE BICO;MILHO;FEIJÃO;BATATA;OUTRAS HORTÍCOLAS;CONSOCIAÇÕES ANUAIS E OUTRAS CULT. FORRAG. ANUAIS,Superfície agrícola,50,1,1.274
+50,3301140400,pumpkin_squash_gourd,ABÓBORAS E ABOBORINHAS;MILHO;NABO;BATATA,Superfície agrícola,50,1,0.754
+50,3301140400,pumpkin_squash_gourd,ABÓBORAS E ABOBORINHAS;MILHO;OUTRAS HORTÍCOLAS,Superfície agrícola,50,1,0.0347
+50,3301140400,pumpkin_squash_gourd,ABÓBORAS E ABOBORINHAS;PRADOS TEMPORÁRIOS,Superfície agrícola,50,1,0.0995
+50,3301140400,pumpkin_squash_gourd,ABÓBORAS E ABOBORINHAS;TREMOÇO,Superfície agrícola,50,1,1.1776
+50,3301140400,pumpkin_squash_gourd,CHUCHU,Superfície agrícola,50,1,0.5674
+50,3301210100,mustard,MOSTARDA,Superfície agrícola,50,1,0.1703
+50,3301210200,brassica_oleracea_cabbage,COUVE;AVEIA,Superfície agrícola,50,1,0.5791
+50,3301210200,brassica_oleracea_cabbage,COUVE;BATATA;CEBOLA,Superfície agrícola,50,1,1.7654
+50,3301210200,brassica_oleracea_cabbage,COUVE;TREMOÇO;FAVA,Superfície agrícola,50,1,0.1022
+50,3301210300,cress,AGRIÃO,Superfície agrícola,50,1,0.0626
+50,3301220200,garlic,ALHO,Superfície agrícola,50,1,0.2372
+50,3301260000,aubergine_eggplant,BERINGELA,Superfície agrícola,50,1,1.0742
+50,3301290200,beetroot_beets,BETERRABA,Superfície agrícola,50,1,0.0512
+50,3301290800,turnips,NABIÇA;NABO,Superfície agrícola,50,1,0.0684
+50,3301310800,spinach,ESPINAFRE,Superfície agrícola,50,1,1.4795
+EXCLUDED (HCAT branch),3306060000,oak,SOBREIRO PARA PRODUÇÃO DE CORTIÇA,Superfície agrícola,EXCLUDED (HCAT branch),1353,12323.947
+EXCLUDED (HCAT branch),3303080700,wire_bush,SUPERFÍCIE ARBUSTIVA NÃO PASTOREÁVEL,Superfície florestal,EXCLUDED (HCAT branch),970,959.2447
+EXCLUDED (HCAT branch),3306060000,oak,POVOAMENTO DE SOBREIROS,Superfície florestal,EXCLUDED (HCAT branch),680,4679.2766
+EXCLUDED (HCAT branch),3306000000,tree_wood_forest,POVOAMENTO OUTRAS FOLHOSAS,Superfície florestal,EXCLUDED (HCAT branch),404,265.5359
+EXCLUDED (HCAT branch),3303030000,nuts,PINHÃO,Superfície agrícola,20,279,3189.9275
+EXCLUDED (HCAT branch),3306000000,tree_wood_forest,POVOAMENTO DE PINHEIRO MANSO,Superfície florestal,EXCLUDED (HCAT branch),131,972.8294999999999
+EXCLUDED (HCAT branch),3306000000,tree_wood_forest,POVOAMENTO OUTRAS RESINOSAS,Superfície florestal,EXCLUDED (HCAT branch),78,148.4428
+EXCLUDED (HCAT branch),3306060000,oak,POVOAMENTO AZINHEIRAS,Superfície florestal,EXCLUDED (HCAT branch),40,423.9827
+EXCLUDED (HCAT branch),3306000000,tree_wood_forest,POVOAMENTO F MISTO,Superfície florestal,EXCLUDED (HCAT branch),38,44.547399999999996
+EXCLUDED (HCAT branch),3306050000,eucalyptus,POVOAMENTO DE EUCALIPTO,Superfície florestal,EXCLUDED (HCAT branch),27,164.5599
+EXCLUDED (HCAT branch),3306000000,tree_wood_forest,BOSQUETES,Superfície florestal,EXCLUDED (HCAT branch),26,3.4198
+EXCLUDED (HCAT branch),3306000000,tree_wood_forest,OUTRAS SUPERFÍCIES FLORESTAIS,Superfície florestal,EXCLUDED (HCAT branch),21,94.7188
+EXCLUDED (HCAT branch),3306060000,oak,POVOAMENTO DE SOBREIROS,Superfície agrícola,EXCLUDED (HCAT branch),20,100.667
+EXCLUDED (HCAT branch),3306060000,oak,POVOAMENTO CARVALHO NEGRAL,Superfície florestal,EXCLUDED (HCAT branch),14,14.1783
+EXCLUDED (HCAT branch),3303080700,wire_bush,ELEMENTO LINEAR SEBE OU CORTA-VENTO-ÁREA ÚTIL,Elementos lineares e da paisagem,EXCLUDED (HCAT branch),1,0.1275
+EXCLUDED (HCAT branch),3306000000,tree_wood_forest,ACEIRO FLORESTAL,Superfície florestal,EXCLUDED (HCAT branch),1,0.8866
+EXCLUDED (HCAT branch),3306000000,tree_wood_forest,GALERIA RIPÍCOLA,Superfície florestal,EXCLUDED (HCAT branch),1,0.1734
+EXCLUDED (HCAT branch),3306000000,tree_wood_forest,OUTRAS SUPERFÍCIES FLORESTAIS;POVOAMENTO DE SOBREIROS,Superfície florestal,EXCLUDED (HCAT branch),1,16.0085
+EXCLUDED (HCAT branch),3306000000,tree_wood_forest,POVOAMENTO DE PINHEIRO MANSO,Superfície agrícola,EXCLUDED (HCAT branch),1,0.1735
+EXCLUDED (HCAT branch),3306000000,tree_wood_forest,POVOAMENTO DE PINHEIRO MANSO;OUTRAS SUPERFÍCIES FLORESTAIS,Superfície florestal,EXCLUDED (HCAT branch),1,106.5347
+EXCLUDED (HCAT branch),3306000000,tree_wood_forest,POVOAMENTO OUTRAS FOLHOSAS;POVOAMENTO DE SOBREIROS,Superfície florestal,EXCLUDED (HCAT branch),1,2.659
+EXCLUDED (HCAT branch),3306000000,tree_wood_forest,POVOAMENTO OUTRAS FOLHOSAS;POVOAMENTO F MISTO,Superfície florestal,EXCLUDED (HCAT branch),1,5.7047
+EXCLUDED (HCAT branch),3306000000,tree_wood_forest,POVOAMENTO OUTRAS FOLHOSAS;POVOAMENTO OUTRAS RESINOSAS,Superfície florestal,EXCLUDED (HCAT branch),1,1.4154
+EXCLUDED (HCAT branch),3306000000,tree_wood_forest,POVOAMENTO OUTRAS FOLHOSAS;POVOAMENTO OUTRAS RESINOSAS;POVOAMENTO F MISTO,Superfície florestal,EXCLUDED (HCAT branch),1,3.6485
+EXCLUDED (HCAT branch),3306060000,oak,POVOAMENTO MISTO QUERCUS(SOB.AZENH.CARVAL/NEGRAL),Superfície florestal,EXCLUDED (HCAT branch),1,1.2389
+NON-AGRICULTURAL (land cover),3399000000,not_known_and_other,NOT KNOWN,Superfície florestal,OTHER,22112,17883.4031
+NON-AGRICULTURAL (land cover),3399000000,not_known_and_other,NOT KNOWN,Outras superfícies,OTHER,6054,3686.3521
+NON-AGRICULTURAL (land cover),3301010700,rice,ELEMENTO LINEAR EM ORIZICULTURA-ÁREA ÚTIL,Elementos lineares e da paisagem,10,6,3.0928
+NON-AGRICULTURAL (land cover),3399000000,not_known_and_other,LINHAS DE ÁGUA - ÁREA ÚTIL,Elementos lineares e da paisagem,OTHER,5,0.5732
+NON-AGRICULTURAL (land cover),3301010700,rice,ELEMENTO LINEAR ARROZ (NÃO ÚTIL-COMP. MAA),Elementos lineares e da paisagem,10,1,0.0273
+NON-AGRICULTURAL (land cover),3301130000,strawberries,MEDRONHEIRO,Superfície florestal,50,1,11.6896
+NON-AGRICULTURAL (land cover),3302000000,pasture_meadow_grassland_grass,PASTAGENS ARBUSTIVAS,Outras superfícies,30,1,1.5444
+NON-AGRICULTURAL (land cover),3303030500,sweet_chestnuts,POVOAMENTO CASTANHEIRO,Superfície florestal,20,1,0.4205
+NON-AGRICULTURAL (land cover),3303030500,sweet_chestnuts,POVOAMENTO CASTANHEIRO;POVOAMENTO OUTRAS FOLHOSAS,Superfície florestal,20,1,2.7112
+OTHER,3301990000,other_arable_land_crops,CONSOCIAÇÕES ANUAIS E OUTRAS CULT. FORRAG. ANUAIS,Superfície agrícola,OTHER,2385,1768.6845
+OTHER,3301110000,fallow_land_not_crop,POUSIO,Superfície agrícola,OTHER,1744,777.7252
+OTHER,3399000000,not_known_and_other,NOT KNOWN,Superfície agrícola,OTHER,1415,1240.0362
+OTHER,3301020100,beans,FEIJÃO,Superfície agrícola,OTHER,134,68.0063
+OTHER,3301990000,other_arable_land_crops,OUTRAS CULTURAS TEMPORÁRIAS,Superfície agrícola,OTHER,108,41.335
+OTHER,3301020700,sweet_lupins,TREMOÇO,Superfície agrícola,OTHER,39,8.5669
+OTHER,3301020700,sweet_lupins,TREMOCILHA,Superfície agrícola,OTHER,28,52.1135
+OTHER,3301020100,beans,FAVA,Superfície agrícola,OTHER,25,36.9267
+OTHER,3301070000,fresh_vegetables,OUTRAS LEGUMINOSAS SECAS,Superfície agrícola,50,19,3.6565
+OTHER,3301020100,beans,FEIJÃO;BATATA,Superfície agrícola,OTHER,18,2.3847
+OTHER,3301020600,peas,ERVILHA,Superfície agrícola,OTHER,18,77.7749
+OTHER,3301020200,chickpeas,GRÃO DE BICO,Superfície agrícola,OTHER,16,34.3997
+OTHER,3301060500,sunflower,GIRASSOL,Superfície agrícola,OTHER,11,30.088199999999997
+OTHER,3301110000,fallow_land_not_crop,POUSIO;OUTRAS HORTÍCOLAS,Superfície agrícola,OTHER,4,0.6106
+OTHER,3301020100,beans,FEIJÃO;BATATA;OUTRAS HORTÍCOLAS,Superfície agrícola,OTHER,3,0.4953
+OTHER,3399000000,not_known_and_other,CONSOCIAÇÃO DE FIXADORAS DE AZOTO,Superfície agrícola,OTHER,3,11.2912
+OTHER,3301020100,beans,FEIJÃO;OUTRAS HORTÍCOLAS,Superfície agrícola,OTHER,2,0.3514
+OTHER,3303030000,nuts,AMENDOIM,Superfície agrícola,20,2,26.1718
+OTHER,3301020100,beans,FAVA;AVEIA,Superfície agrícola,OTHER,1,0.1143
+OTHER,3301020100,beans,FEIJÃO;CEBOLA,Superfície agrícola,OTHER,1,0.1074
+OTHER,3301020100,beans,FEIJÃO;ERVILHA;OUTRAS HORTÍCOLAS;FAVA,Superfície agrícola,OTHER,1,0.3855
+OTHER,3301020100,beans,FEIJÃO;FAVA,Superfície agrícola,OTHER,1,0.0574
+OTHER,3301020100,beans,FEIJÃO;NABO,Superfície agrícola,OTHER,1,0.1424
+OTHER,3301020100,beans,FEIJÃO;OUTRAS HORTÍCOLAS;BATATA,Superfície agrícola,OTHER,1,0.2383
+OTHER,3301060400,rapeseed_rape,COLZA,Superfície agrícola,OTHER,1,9.2335
+OTHER,3301060800,oilseed_crops,OUTRAS OLEAGINOSAS,Superfície agrícola,OTHER,1,0.0322

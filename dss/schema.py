@@ -14,12 +14,14 @@ class SourceColumns:
 
     HCAT_CODE: Final[str] = "EC_hcat_c"  # 10-digit hierarchical HCAT code
     HCAT_NAME: Final[str] = "EC_hcat_n"  # English HCAT class name
+    ORIGINAL_LABEL: Final[str] = "EC_org_n"  # national (Portuguese) crop label
     LAND_COVER: Final[str] = "CAT_OCU_DE"  # national land-cover category
     DECLARED_AREA_M2: Final[str] = "OSA_AREA"  # declared area, square metres
 
     REQUIRED: Final[tuple[str, ...]] = (
         HCAT_CODE,
         HCAT_NAME,
+        ORIGINAL_LABEL,
         LAND_COVER,
         DECLARED_AREA_M2,
     )
@@ -30,6 +32,7 @@ class ParcelColumns:
 
     HCAT_CODE: Final[str] = "hcat_code"
     HCAT_NAME: Final[str] = "hcat_name"
+    ORIGINAL_LABEL: Final[str] = "original_label"
     LAND_COVER: Final[str] = "land_cover"
     CATEGORY: Final[str] = "category"  # dss.reference_tables.CropCategory
     DECLARED_AREA_HA: Final[str] = "declared_area_ha"  # from the source, ha
@@ -40,5 +43,6 @@ class ParcelColumns:
     FROM_SOURCE: Final[dict[str, str]] = {
         SourceColumns.HCAT_CODE: HCAT_CODE,
         SourceColumns.HCAT_NAME: HCAT_NAME,
+        SourceColumns.ORIGINAL_LABEL: ORIGINAL_LABEL,
         SourceColumns.LAND_COVER: LAND_COVER,
     }

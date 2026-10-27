@@ -170,3 +170,24 @@ class HydraulicConfig:
                 "pumping_hours_per_day must be in (0, 24], "
                 f"got {self.pumping_hours_per_day}."
             )
+
+
+@dataclass(frozen=True, slots=True)
+class EnergyConfig:
+    """Energy-balance parameters (brief, Task 3).
+
+    Attributes:
+        pv_derate: System derate factor applied to PV output (temperature,
+            soiling, wiring, inverter and mismatch losses), dimensionless.
+    """
+
+    pv_derate: float = 0.75
+
+    def __post_init__(self) -> None:
+        """Validate parameter ranges.
+
+        Raises:
+            ValueError: If the derate factor is outside (0, 1].
+        """
+        if not 0 < self.pv_derate <= 1:
+            raise ValueError(f"pv_derate must be in (0, 1], got {self.pv_derate}.")

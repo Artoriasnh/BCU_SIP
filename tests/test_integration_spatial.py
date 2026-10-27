@@ -26,7 +26,7 @@ pytestmark = [
     ),
 ]
 
-# Locations used in the brief and in the submission notebook.
+# Locations used in the brief and in run_demo.py.
 LISBON = (38.722, -9.139)  # urban centre: brief expects EmptyClusterError
 BRIEF_ALENTEJO = (38.015, -7.865)  # brief's "valid" example; see test below
 # Demonstration site selected by rule in evaluation/task1_spatial.py.
@@ -61,7 +61,7 @@ def test_lisbon_raises_empty_cluster(layer):
 
 
 def test_brief_alentejo_point_is_empty_in_this_sample(layer):
-    """The brief's example point has no parcel within 150 m (ASSUMPTIONS A4)."""
+    """The brief's example point has no parcel within 150 m (ASSUMPTIONS.md, A4)."""
     with pytest.raises(EmptyClusterError):
         layer.extract_cluster(*BRIEF_ALENTEJO)
 

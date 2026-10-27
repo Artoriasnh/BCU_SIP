@@ -6,7 +6,7 @@ land-cover matrix), so the brief's two-digit prefixes (10/20/30/50) match no
 parcel. Instead, the rules in ``resources/hcat_mapping.csv`` map HCAT branches
 (code prefixes) to archetypes. The longest matching prefix wins, so a specific
 rule can override its parent; unmatched or missing codes fall back to the brief's
-"Other / NaN" archetype. See ASSUMPTIONS A1.
+"Other / NaN" archetype. See ASSUMPTIONS.md, A1.
 
 A small override table (``resources/label_overrides.csv``) corrects documented
 EuroCrops harmonisation errors. Each override matches both the HCAT code and the

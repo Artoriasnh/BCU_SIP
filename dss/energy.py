@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Hao Ni. All rights reserved.
 """Task 3: pump selection and daily energy balance.
 
-Pump selection (ASSUMPTIONS A8)
+Pump selection (ASSUMPTIONS.md, A8)
 -------------------------------
 The brief selects the smallest catalogue tier whose rated motor power meets the
 required power, and flags multiple pumps when the daily demand exceeds Tier 4
@@ -14,7 +14,7 @@ delivery, with ``n = max(ceil(P / P_max), ceil(Q / Q_max))``.
 * ``LEAST_COST`` (sensitivity): the cheapest combination of tiers, mixed or not.
   Below the multiple-pump threshold both strategies select the same single pump.
 
-Energy balance (ASSUMPTIONS A7, A13)
+Energy balance (ASSUMPTIONS.md, A7, A13)
 ------------------------------------
     E_PV     = PV_kWp * PSH * derate                 [kWh/day]
     E_pump   = P * t_pump                            [kWh/day]

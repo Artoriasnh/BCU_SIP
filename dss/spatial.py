@@ -7,7 +7,7 @@ point from EPSG:4326 to EPSG:3763, buffers it by 150 m, pre-selects candidate
 parcels with the R-tree index and clips them to the buffer.
 
 Each parcel reports its area inside the buffer (``area_clipped_ha``, used for
-water demand; see ASSUMPTIONS A3) and its whole-parcel area (``area_full_ha``).
+water demand; see ASSUMPTIONS.md, A3) and its whole-parcel area (``area_full_ha``).
 """
 
 from __future__ import annotations

@@ -30,9 +30,11 @@ dev = [
     "mypy>=1.8",
     "pandas-stubs",
     "types-requests",
-    "jupyter",
     "matplotlib",
 ]
+
+[tool.setuptools]
+py-modules = ["dss_pipeline"]
 
 [tool.setuptools.packages.find]
 include = ["dss*"]

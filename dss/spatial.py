@@ -13,8 +13,6 @@ water demand; see ASSUMPTIONS A3) and its whole-parcel area (``area_full_ha``).
 from __future__ import annotations
 
 import logging
-import math
-import numbers
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -29,6 +27,7 @@ from dss.exceptions import DataValidationError, EmptyClusterError
 from dss.reference_tables import CropCategory
 from dss.schema import ParcelColumns, SourceColumns
 from dss.taxonomy import HcatClassifier, is_agricultural
+from dss.validation import validate_coordinates
 
 logger = logging.getLogger(__name__)
 
@@ -192,8 +191,7 @@ class ParcelLayer:
             DataValidationError: If the coordinates are not finite or out of range.
             EmptyClusterError: If no agricultural parcel lies inside the buffer.
         """
-        _validate_coordinates(lat, lon)
-        lat, lon = float(lat), float(lon)  # accept numpy scalars, store floats
+        lat, lon = validate_coordinates(lat, lon)
         cfg = self._config
 
         # Create the point in degrees, reproject to metres, and only then buffer.
@@ -334,23 +332,3 @@ class ParcelLayer:
         )
         return float(centroid_deg.y), float(centroid_deg.x)
 
-
-def _validate_coordinates(lat: float, lon: float) -> None:
-    """Check that coordinates are finite decimal degrees within range.
-
-    Args:
-        lat: Latitude, decimal degrees.
-        lon: Longitude, decimal degrees.
-
-    Raises:
-        DataValidationError: If a value is not a finite number or out of range.
-    """
-    for name, value, bound in (("latitude", lat, 90.0), ("longitude", lon, 180.0)):
-        if isinstance(value, bool) or not isinstance(value, numbers.Real):
-            raise DataValidationError(
-                f"{name} must be a number, got {type(value).__name__}."
-            )
-        if not math.isfinite(value) or abs(value) > bound:
-            raise DataValidationError(
-                f"{name} must be a finite value in [-{bound}, {bound}], got {value}."
-            )

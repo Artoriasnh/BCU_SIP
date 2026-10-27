@@ -4,6 +4,8 @@
 Modules:
     taxonomy: HCAT crop codes to the brief's crop archetypes.
     spatial: Task 1, parcel ingestion and command-zone clustering.
+    solar: Task 2, NASA POWER solar climatology.
+    hydraulics: Task 2, water demand and required pump power.
 
 Geospatial classes are imported lazily, so ``dss.taxonomy`` works without the
 geospatial stack.
@@ -13,8 +15,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from dss.exceptions import DataValidationError, DSSError, EmptyClusterError
+from dss.exceptions import (
+    DataValidationError,
+    DSSError,
+    EmptyClusterError,
+    SolarDataError,
+)
+from dss.hydraulics import HydraulicDemand, size_hydraulics
 from dss.reference_tables import CROP_ARCHETYPES, CropArchetype, CropCategory
+from dss.solar import NasaPowerClient, SolarClimatology
 from dss.taxonomy import HcatClassifier
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -28,8 +37,13 @@ __all__ = [
     "DataValidationError",
     "EmptyClusterError",
     "HcatClassifier",
+    "HydraulicDemand",
+    "NasaPowerClient",
     "ParcelCluster",
     "ParcelLayer",
+    "SolarClimatology",
+    "SolarDataError",
+    "size_hydraulics",
 ]
 
 __version__ = "0.1.0"

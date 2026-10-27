@@ -42,9 +42,14 @@ dss/                 Engine package (one module per concern)
   schema.py          Source and output column names
   exceptions.py      Domain exceptions (EmptyClusterError, ...)
   reference_tables.py  Reference parameters from the assessment brief
+  validation.py      Shared input validation
   taxonomy.py        HCAT -> brief crop archetype classification
   spatial.py         Task 1: parcel ingestion, buffering and clustering
+  solar.py           Task 2: NASA POWER client (timeouts, retries, caching, units)
+  hydraulics.py      Task 2: water demand and required pump power
   resources/hcat_mapping.csv   Versioned HCAT mapping (single source of truth)
-tests/               pytest suite (unit + integration)
-docs/ASSUMPTIONS.md  Assumption register
+tests/               pytest suite (unit, integration and optional live-API tests)
 ```
+
+Live NASA POWER tests are skipped by default; run them with
+`DSS_RUN_NETWORK_TESTS=1 pytest -m network`.

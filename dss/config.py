@@ -33,6 +33,16 @@ METRIC_CRS: Final[str] = "EPSG:3763"
 # Unit conversion factors
 # ---------------------------------------------------------------------------
 M2_PER_HA: Final[float] = 10_000.0
+J_PER_KWH: Final[float] = 3.6e6  # 3600 s/h x 1000 W/kW
+MJ_PER_KWH: Final[float] = 3.6
+
+# ---------------------------------------------------------------------------
+# External services
+# ---------------------------------------------------------------------------
+# NASA POWER climatology endpoint (brief, Section 3B; no API key required).
+NASA_POWER_URL: Final[str] = (
+    "https://power.larc.nasa.gov/api/temporal/climatology/point"
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -74,4 +84,89 @@ class SpatialConfig:
             raise ValueError(
                 "min_clipped_area_ha must be non-negative, "
                 f"got {self.min_clipped_area_ha}."
+            )
+
+
+@dataclass(frozen=True, slots=True)
+class SolarApiConfig:
+    """Parameters of the NASA POWER client (Task 2).
+
+    Attributes:
+        url: Climatology endpoint.
+        parameter: Irradiance parameter (all-sky surface shortwave downward).
+        community: POWER user community; it determines the returned units.
+        timeout_s: Timeout per HTTP request, seconds.
+        max_retries: Retries after a timeout, connection error, HTTP 429 or 5xx.
+        backoff_s: Initial retry delay, seconds; doubled after each retry.
+        coordinate_decimals: Rounding of request coordinates; also the cache key
+            resolution (4 decimals ~ 11 m).
+    """
+
+    url: str = NASA_POWER_URL
+    parameter: str = "ALLSKY_SFC_SW_DWN"
+    community: str = "AG"
+    timeout_s: float = 10.0
+    max_retries: int = 2
+    backoff_s: float = 1.0
+    coordinate_decimals: int = 4
+
+    def __post_init__(self) -> None:
+        """Validate parameter ranges.
+
+        Raises:
+            ValueError: If a parameter is outside its meaningful range.
+        """
+        if self.timeout_s <= 0:
+            raise ValueError(f"timeout_s must be positive, got {self.timeout_s}.")
+        if self.max_retries < 0:
+            raise ValueError(f"max_retries must be >= 0, got {self.max_retries}.")
+        if self.backoff_s < 0:
+            raise ValueError(f"backoff_s must be >= 0, got {self.backoff_s}.")
+        if not 0 <= self.coordinate_decimals <= 6:
+            raise ValueError(
+                "coordinate_decimals must be in [0, 6], "
+                f"got {self.coordinate_decimals}."
+            )
+
+
+@dataclass(frozen=True, slots=True)
+class HydraulicConfig:
+    """Hydraulic design parameters (brief, Task 2).
+
+    Attributes:
+        total_dynamic_head_m: Static water depth plus friction losses, m.
+        pump_efficiency: Combined pump and motor efficiency, dimensionless.
+        pumping_hours_per_day: Daily pumping duration, h/day.
+        water_density_kg_m3: Density of water, kg/m3.
+        gravity_m_s2: Gravitational acceleration, m/s2.
+    """
+
+    total_dynamic_head_m: float = 40.0
+    pump_efficiency: float = 0.55
+    pumping_hours_per_day: float = 6.0
+    water_density_kg_m3: float = 1000.0
+    gravity_m_s2: float = 9.81
+
+    def __post_init__(self) -> None:
+        """Validate parameter ranges.
+
+        Raises:
+            ValueError: If a parameter is outside its physical range.
+        """
+        positive = {
+            "total_dynamic_head_m": self.total_dynamic_head_m,
+            "water_density_kg_m3": self.water_density_kg_m3,
+            "gravity_m_s2": self.gravity_m_s2,
+        }
+        for name, value in positive.items():
+            if value <= 0:
+                raise ValueError(f"{name} must be positive, got {value}.")
+        if not 0 < self.pump_efficiency <= 1:
+            raise ValueError(
+                f"pump_efficiency must be in (0, 1], got {self.pump_efficiency}."
+            )
+        if not 0 < self.pumping_hours_per_day <= 24:
+            raise ValueError(
+                "pumping_hours_per_day must be in (0, 24], "
+                f"got {self.pumping_hours_per_day}."
             )

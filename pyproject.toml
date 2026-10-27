@@ -80,4 +80,5 @@ testpaths = ["tests"]
 pythonpath = ["."]
 markers = [
     "integration: requires the EuroCrops Portugal dataset under data/raw/PT/",
+    "network: calls the live NASA POWER API (set DSS_RUN_NETWORK_TESTS=1)",
 ]

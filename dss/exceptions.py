@@ -34,3 +34,7 @@ class EmptyClusterError(DSSError):
                 required by the brief.
         """
         super().__init__(message)
+
+
+class SolarDataError(DSSError):
+    """Solar resource data could not be retrieved or failed validation."""

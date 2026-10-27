@@ -116,6 +116,18 @@ which makes a Monte Carlo wrapper straightforward::
    region. ``appraise`` takes microseconds and has no side effects, so
    draws parallelise trivially and a fixed seed makes the study
    reproducible.
+
+The deterministic engine already shows which policy levers such a study should
+compare. Under the brief's parameters the annual surplus is zero
+(ASSUMPTIONS.md, A7), so a subsidy on PUE CAPEX shortens the payback of an
+asset that is not feasible and produces no investment: the binding constraint
+is energy, not capital. Scaling the PV array by a factor ``k`` divides the
+surplus threshold (5.87-6.00 PSH) by ``k``. With ``k`` of about 1.4 every
+mainland site has an annual surplus (annual PSH 4.4-5.0), and at the
+demonstration site the dryer (10 kWh/day) becomes feasible at ``k`` of about
+1.75 (5 kWp x k x 4.90 PSH x 0.75 - 22.2 kWh/day >= 10 kWh/day). A regional
+study would therefore compare PV oversizing with CAPEX subsidies, sampling the
+uncertain inputs around each policy.
 """
 
 from __future__ import annotations

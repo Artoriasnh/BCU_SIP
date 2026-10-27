@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Hao Ni. All rights reserved.
 """Integration tests for Task 1 against the EuroCrops Portugal 2021 layer.
 
-Skipped automatically when the dataset is not present under ``data/raw/PT/``.
+Skipped automatically when ``data/raw/PT.zip`` is not present.
 Run only these with ``pytest -m integration``.
 """
 

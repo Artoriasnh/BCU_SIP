@@ -41,10 +41,16 @@ from dss.hydraulics import size_hydraulics
 from dss.reference_tables import CROP_ARCHETYPES, PUE_CATALOGUE, CropCategory
 from dss.solar import MONTHS, NasaPowerClient, SolarClimatology
 from dss.spatial import ParcelCluster, ParcelLayer
-from evaluation.common import SEED, Report, demo_site, markdown_table
-from evaluation.task1_spatial import parcel_sample_points
-from evaluation.task2_solar_hydraulics import FIXTURE
-from evaluation.task3_energy import demo_solar, solar_by_grid_cell
+from evaluation.common import (
+    FIXTURE,
+    SEED,
+    Report,
+    demo_site,
+    demo_solar,
+    markdown_table,
+    parcel_sample_points,
+    solar_by_grid_cell,
+)
 
 logger = logging.getLogger(__name__)
 

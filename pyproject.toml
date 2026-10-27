@@ -82,6 +82,6 @@ ignore_missing_imports = true  # geopandas, shapely, pyogrio and pyproj ship no 
 testpaths = ["tests"]
 pythonpath = ["."]
 markers = [
-    "integration: requires the EuroCrops Portugal dataset under data/raw/PT/",
+    "integration: requires the EuroCrops Portugal dataset at data/raw/PT.zip",
     "network: calls the live NASA POWER API (set DSS_RUN_NETWORK_TESTS=1)",
 ]

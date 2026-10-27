@@ -16,6 +16,8 @@ All four tasks are implemented, tested and evaluated.
 
 ## Quick start
 
+Developed and tested on Python 3.10.
+
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
@@ -24,15 +26,15 @@ python run_demo.py                                        # valid and invalid co
 python dss_pipeline.py --lat 38.07759 --lon -7.96330      # one well, Tasks 1-4
 python dss_pipeline.py --lat 38.07759 --lon -7.96330 --demand-based --json
 
-pytest                                                    # tests (offline)
+pytest --cov=dss --cov=dss_pipeline                       # tests with coverage (offline)
 ruff check . && mypy dss dss_pipeline.py run_demo.py      # style and types
 ```
 
-The parcel layer is not stored in the repository (the `.dbf` alone is about
-320 MB). Download `PT.zip` from [Zenodo record 10118572](https://zenodo.org/records/10118572/files/PT.zip)
-(MD5 `3dba9c89c559b34d57acd286505bcb66`) and unzip it so that the shapefile is
-at `data/raw/PT/PT_2021_EC21.shp`. Tests that need it are skipped when it is
-absent; `--data` points the pipeline at any layer with the same schema.
+**Data.** Download `PT.zip` from [Zenodo record 10118572](https://zenodo.org/records/10118572/files/PT.zip)
+(MD5 `3dba9c89c559b34d57acd286505bcb66`) and place it at `data/raw/PT.zip`.
+It is read in place, without unzipping (GDAL `/vsizip/`). An unzipped
+shapefile, or any layer with the same schema, can be passed with `--data`.
+Tests that need the layer are skipped when it is absent.
 
 ## Result at the demonstration site
 
@@ -75,7 +77,7 @@ nearest location satisfying a fixed rule ([ASSUMPTIONS.md, A4](ASSUMPTIONS.md#a4
 | Criterion | Where to look |
 |---|---|
 | **Code structure and modularity** | One module per concern under `dss/` (ETL `spatial`, API `solar`, sizing `hydraulics` and `energy`, economics `economics`); `dss_pipeline.py` only orchestrates. Reference tables are data (`reference_tables.py`), filtered programmatically rather than with nested conditionals. Configuration is frozen, validated dataclasses (`config.py`). Type annotations and Google-style docstrings throughout, enforced by ruff and mypy. |
-| **Geospatial and dimensional rigour** | Reprojection to EPSG:3763 before buffering, R-tree spatial index, clipping to the buffer (`dss/spatial.py`); CRSs, indexing and units are documented in the `dss_pipeline.py` docstring. Power and energy are kept apart in every name (`kW`, `kWp`, `kWh/day`). Planar areas agree with declared areas to 0.009 % (median) and with geodesic areas to 0.04 % (P99). |
+| **Geospatial and dimensional rigour** | `PT.zip` read in place; reprojection to EPSG:3763 before buffering, R-tree spatial index, clipping to the buffer (`dss/spatial.py`); CRSs, indexing and units are documented in the `dss_pipeline.py` docstring. Power and energy are kept apart in every name (`kW`, `kWp`, `kWh/day`). Planar areas agree with declared areas to 0.009 % (median) and with geodesic areas to 0.04 % (P99). |
 | **Defensive engineering** | `EmptyClusterError` with the exact required message, verified on valid and invalid coordinates (`run_demo.py`, `tests/test_spatial.py`, `tests/test_integration_spatial.py`). NASA POWER client with timeout, retries with back-off, in-memory and disk cache, unit and fill-value checks (`dss/solar.py`). Zero surplus and zero compatible crops return a status and no payback (`dss/economics.py`). |
 | **Reasoning and assumptions** | [`ASSUMPTIONS.md`](ASSUMPTIONS.md): 13 decisions with evidence and effect, and two findings about the brief's reference data. Monte Carlo extension: `dss_pipeline.py` docstring. |
 

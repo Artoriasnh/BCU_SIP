@@ -37,7 +37,8 @@ from dss.solar import MONTHS, NasaPowerClient, SolarClimatology, load_power_json
 from dss.spatial import ParcelLayer
 from evaluation.common import (
     BRIEF_ALENTEJO,
-    RESULTS_ROOT,
+    FIXTURE,
+    TRANSECT,
     Report,
     demo_site,
     markdown_table,
@@ -45,19 +46,8 @@ from evaluation.common import (
 
 logger = logging.getLogger(__name__)
 
-FIXTURE = RESULTS_ROOT.parent.parent / "tests" / "fixtures" / "nasa_power_alentejo.json"
 PVGIS_URL: Final[str] = "https://re.jrc.ec.europa.eu/api/v5_3/MRcalc"
 TIMEOUT_S: Final[float] = 30.0
-
-# North-to-south transect of mainland Portugal (city centres, decimal degrees).
-TRANSECT: Final[tuple[tuple[str, float, float], ...]] = (
-    ("Braganca", 41.806, -6.757),
-    ("Porto", 41.150, -8.611),
-    ("Coimbra", 40.203, -8.410),
-    ("Lisbon", 38.722, -9.139),
-    ("Evora", 38.571, -7.909),
-    ("Faro", 37.019, -7.930),
-)
 
 # Mid-season crop coefficients, FAO Irrigation and Drainage Paper 56, Table 12
 # (indicative values for a representative crop of each archetype).

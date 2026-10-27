@@ -33,7 +33,7 @@ from dss.exceptions import EmptyClusterError
 from dss.hydraulics import size_hydraulics
 from dss.reference_tables import CropCategory
 from dss.schema import ParcelColumns, SourceColumns
-from dss.spatial import ParcelCluster, ParcelLayer
+from dss.spatial import ParcelCluster, ParcelLayer, vector_source
 from dss.taxonomy import HcatClassifier, LabelOverrides, is_agricultural
 from evaluation.common import (
     BRIEF_ALENTEJO,
@@ -41,6 +41,7 @@ from evaluation.common import (
     SEED,
     Report,
     markdown_table,
+    parcel_sample_points,
     timed,
 )
 
@@ -90,12 +91,13 @@ def main(argv: Sequence[str] | None = None) -> None:
         "random locations, performance, and sensitivity to the two Task 1 "
         "modelling choices (area accounting and buffer radius).",
     )
-    for suffix in (".shp", ".dbf"):
-        report.register_data_file(DEFAULT_PARCELS_PATH.with_suffix(suffix))
+    report.register_data_file(DEFAULT_PARCELS_PATH)
 
     raw, read_s = timed(
         lambda: gpd.read_file(
-            DEFAULT_PARCELS_PATH, columns=list(SourceColumns.REQUIRED), engine="pyogrio"
+            vector_source(DEFAULT_PARCELS_PATH),
+            columns=list(SourceColumns.REQUIRED),
+            engine="pyogrio",
         )
     )
     layer, prepare_s = timed(lambda: ParcelLayer(raw))
@@ -370,7 +372,7 @@ def evaluate_performance(
     q = pd.Series(durations) * 1000
     table = pd.DataFrame(
         {
-            "Step": ["Read shapefile (4 attributes)", "Prepare layer (reproject, "
+            "Step": ["Read PT.zip (4 attributes)", "Prepare layer (reproject, "
                      "classify, index)", f"Cluster query (n = {len(q)})"],
             "Time": [f"{read_s:.1f} s", f"{prepare_s:.1f} s",
                      f"median {q.median():.1f} ms, P95 {q.quantile(0.95):.1f} ms, "
@@ -756,17 +758,6 @@ def evaluate_maps(layer: ParcelLayer, report: Report, site: SiteSearch) -> None:
 # ---------------------------------------------------------------------------
 def _status_label(category: CropCategory | None) -> str:
     return "EXCLUDED (HCAT branch)" if category is None else category.value
-
-
-def parcel_sample_points(
-    layer: ParcelLayer, n: int, rng: np.random.Generator
-) -> list[tuple[float, float]]:
-    """(lat, lon) of a point inside each of ``n`` random agricultural parcels."""
-    index = rng.choice(len(layer.parcels), size=min(n, len(layer.parcels)),
-                       replace=False)
-    points = layer.parcels.geometry.iloc[index].representative_point()
-    lon, lat = _TO_DEG.transform(points.x.to_numpy(), points.y.to_numpy())
-    return list(zip(lat.tolist(), lon.tolist(), strict=True))
 
 
 def _random_mainland_points(

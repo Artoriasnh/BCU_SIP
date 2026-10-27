@@ -17,9 +17,8 @@ from typing import Final
 # Paths
 # ---------------------------------------------------------------------------
 PROJECT_ROOT: Final[Path] = Path(__file__).resolve().parent.parent
-DEFAULT_PARCELS_PATH: Final[Path] = (
-    PROJECT_ROOT / "data" / "raw" / "PT" / "PT_2021_EC21.shp"
-)
+# EuroCrops Portugal (Zenodo record 10118572), read directly from the archive.
+DEFAULT_PARCELS_PATH: Final[Path] = PROJECT_ROOT / "data" / "raw" / "PT.zip"
 
 # ---------------------------------------------------------------------------
 # Coordinate reference systems

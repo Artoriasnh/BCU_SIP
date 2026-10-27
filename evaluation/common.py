@@ -1,5 +1,10 @@
 # Copyright (c) 2026 Hao Ni. All rights reserved.
-"""Shared helpers for the evaluation scripts: report assembly, figures, metadata.
+"""Shared code for the evaluation scripts.
+
+Report assembly (``Report``), metadata for reproducibility, and the inputs
+shared by several tasks: locations, the stored NASA POWER response, random
+well placement and grid-cell grouping of NASA POWER requests. The task scripts
+depend only on this module, never on each other.
 
 Each evaluation writes a self-contained ``REPORT.md`` (with figures and CSV
 tables next to it) so that results can be read on GitHub without running code.
@@ -9,23 +14,34 @@ from __future__ import annotations
 
 import datetime as dt
 import hashlib
+import logging
+import math
 import platform
 import subprocess
 import time
-from collections.abc import Callable, Iterable
+from collections import defaultdict
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
 from importlib import metadata
 from pathlib import Path
-from typing import Any, Final, TypeVar
+from typing import TYPE_CHECKING, Any, Final, TypeVar
 
 import matplotlib
 
 matplotlib.use("Agg")  # headless rendering; must precede the pyplot import
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 
-from dss.config import PROJECT_ROOT
+from dss.config import GEOGRAPHIC_CRS, PROJECT_ROOT
+from dss.exceptions import SolarDataError
+from dss.solar import MONTHS, NasaPowerClient, SolarClimatology, load_power_json
+
+if TYPE_CHECKING:  # pragma: no cover - geospatial types only
+    from dss.spatial import ParcelCluster, ParcelLayer
+
+logger = logging.getLogger(__name__)
 
 RESULTS_ROOT: Final[Path] = PROJECT_ROOT / "evaluation" / "results"
 SEED: Final[int] = 20261027
@@ -33,6 +49,19 @@ SEED: Final[int] = 20261027
 # Locations used across the evaluations (decimal degrees).
 BRIEF_ALENTEJO: Final[tuple[float, float]] = (38.015, -7.865)
 LISBON: Final[tuple[float, float]] = (38.722, -9.139)
+
+# North-to-south transect of mainland Portugal (city centres, decimal degrees).
+TRANSECT: Final[tuple[tuple[str, float, float], ...]] = (
+    ("Braganca", 41.806, -6.757),
+    ("Porto", 41.150, -8.611),
+    ("Coimbra", 40.203, -8.410),
+    ("Lisbon", 38.722, -9.139),
+    ("Evora", 38.571, -7.909),
+    ("Faro", 37.019, -7.930),
+)
+
+# Stored NASA POWER response at the brief's point (offline fallback and tests).
+FIXTURE: Final[Path] = PROJECT_ROOT / "tests" / "fixtures" / "nasa_power_alentejo.json"
 
 _PACKAGES: Final[tuple[str, ...]] = (
     "geopandas", "shapely", "pyproj", "pyogrio", "pandas", "numpy",
@@ -210,3 +239,62 @@ def _git_commit() -> str:
     except (OSError, subprocess.SubprocessError):
         return "unknown"
     return result.stdout.strip()
+
+
+def parcel_sample_points(
+    layer: ParcelLayer, n: int, rng: np.random.Generator
+) -> list[tuple[float, float]]:
+    """(lat, lon) of a point inside each of ``n`` random agricultural parcels."""
+    index = rng.choice(len(layer.parcels), size=min(n, len(layer.parcels)),
+                       replace=False)
+    points = layer.parcels.geometry.iloc[index].representative_point()
+    degrees = points.to_crs(GEOGRAPHIC_CRS)
+    return list(zip(degrees.y.tolist(), degrees.x.tolist(), strict=True))
+
+
+def demo_solar(client: NasaPowerClient, cluster: ParcelCluster) -> SolarClimatology:
+    """Live climatology at the centroid, or the stored response if offline."""
+    try:
+        return client.fetch(cluster.centroid_lat, cluster.centroid_lon)
+    except SolarDataError as exc:
+        logger.warning("NASA POWER unavailable (%s); using the stored response.", exc)
+        return load_power_json(FIXTURE)
+
+
+def solar_by_grid_cell(
+    client: NasaPowerClient, clusters: Sequence[ParcelCluster]
+) -> tuple[list[SolarClimatology], dict[str, Any]]:
+    """Climatology per cluster, requested once per 1-degree cell where valid.
+
+    For each cell the members at the four extremes are fetched. If they agree
+    the value is shared by all members; otherwise every member is fetched.
+    """
+    cells: dict[tuple[int, int], list[int]] = defaultdict(list)
+    for i, c in enumerate(clusters):
+        cells[(math.floor(c.centroid_lat), math.floor(c.centroid_lon))].append(i)
+
+    def fetch(i: int) -> SolarClimatology:
+        return client.fetch(clusters[i].centroid_lat, clusters[i].centroid_lon)
+
+    result: dict[int, SolarClimatology] = {}
+    requests, inconsistent = 0, 0
+    for members in cells.values():
+        probes = {
+            min(members, key=lambda i: clusters[i].centroid_lat),
+            max(members, key=lambda i: clusters[i].centroid_lat),
+            min(members, key=lambda i: clusters[i].centroid_lon),
+            max(members, key=lambda i: clusters[i].centroid_lon),
+        }
+        fetched = {i: fetch(i) for i in probes}
+        requests += len(probes)
+        values = {tuple(s.monthly_psh[m] for m in MONTHS) for s in fetched.values()}
+        if len(values) == 1:
+            shared = next(iter(fetched.values()))
+            result.update({i: fetched.get(i, shared) for i in members})
+        else:
+            inconsistent += 1
+            result.update({i: fetch(i) for i in members})
+            requests += len(members) - len(probes)
+    summary = {"cells": len(cells), "requests": requests,
+               "inconsistent": inconsistent}
+    return [result[i] for i in range(len(clusters))], summary

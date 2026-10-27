@@ -162,7 +162,11 @@ from dss.validation import validate_areas
 if TYPE_CHECKING:  # pragma: no cover - the geospatial stack is imported lazily
     from dss.spatial import ParcelCluster, ParcelLayer
 
-EXIT_OK, EXIT_BAD_INPUT, EXIT_NO_SOLAR = 0, 2, 3
+EXIT_OK, EXIT_BAD_INPUT, EXIT_NO_SOLAR, EXIT_NO_DATA = 0, 2, 3, 4
+DATA_HINT = (
+    "Download PT.zip from https://zenodo.org/records/10118572/files/PT.zip and "
+    "place it in data/raw/ (no need to unzip), or pass another layer with --data."
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -400,7 +404,12 @@ class DssPipeline:
 
         Returns:
             A pipeline ready to run.
+
+        Raises:
+            FileNotFoundError: If the parcel layer does not exist.
         """
+        if not Path(path).exists():
+            raise FileNotFoundError(f"Parcel layer not found: {path}. {DATA_HINT}")
         from dss.spatial import ParcelLayer  # geospatial stack loaded on demand
 
         return cls(ParcelLayer.from_file(path), client)
@@ -455,7 +464,7 @@ def main(argv: Sequence[str] | None = None, pipeline: DssPipeline | None = None)
 
     Returns:
         Exit status: 0 on success, 2 for invalid input or an empty cluster,
-        3 if no solar data are available.
+        3 if no solar data are available, 4 if the parcel layer is missing.
     """
     parser = argparse.ArgumentParser(
         description="Run the agri-energy DSS (Tasks 1-4) for one tube well."
@@ -482,6 +491,9 @@ def main(argv: Sequence[str] | None = None, pipeline: DssPipeline | None = None)
     except SolarDataError as exc:
         print(f"SolarDataError: {exc}", file=sys.stderr)
         return EXIT_NO_SOLAR
+    except FileNotFoundError as exc:
+        print(f"FileNotFoundError: {exc}", file=sys.stderr)
+        return EXIT_NO_DATA
     print(json.dumps(result.to_dict(), indent=2) if args.json else result.summary())
     return EXIT_OK
 

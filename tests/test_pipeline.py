@@ -155,6 +155,18 @@ class TestDssPipeline:
             DssPipeline(FakeLayer(), FakeClient(error=True)).run(*DEMO_SITE)
 
 
+class TestMissingData:
+    def test_from_file_explains_how_to_get_the_data(self, tmp_path):
+        with pytest.raises(FileNotFoundError, match=r"zenodo\.org"):
+            DssPipeline.from_file(tmp_path / "missing.shp")
+
+    def test_command_line_exit_code(self, tmp_path, capsys):
+        code = dss_pipeline.main(["--lat", "38.07759", "--lon", "-7.96330",
+                                  "--data", str(tmp_path / "missing.shp")])
+        assert code == dss_pipeline.EXIT_NO_DATA
+        assert "Parcel layer not found" in capsys.readouterr().err
+
+
 class TestCommandLine:
     def _main(self, args, client):
         pipeline = DssPipeline(FakeLayer(), client)

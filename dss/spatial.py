@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import logging
 import math
+import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -32,6 +33,42 @@ from dss.taxonomy import HcatClassifier, LabelOverrides, is_agricultural
 from dss.validation import validate_coordinates
 
 logger = logging.getLogger(__name__)
+
+
+def vector_source(path: str | Path) -> str:
+    """Path for OGR to read; a zip archive is read in place, without unzipping.
+
+    Args:
+        path: Vector file, or a ``.zip`` archive holding one shapefile (in any
+            folder), such as EuroCrops' ``PT.zip``.
+
+    Returns:
+        ``path`` itself, or a GDAL ``/vsizip/`` path to the shapefile inside
+        the archive.
+
+    Raises:
+        FileNotFoundError: If ``path`` does not exist.
+        DataValidationError: If an archive is unreadable or does not hold
+            exactly one shapefile.
+    """
+    path = Path(path)
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Parcel layer not found at {path}. Download PT.zip from "
+            "https://zenodo.org/records/10118572 and place it in data/raw/."
+        )
+    if path.suffix.lower() != ".zip":
+        return str(path)
+    try:
+        with zipfile.ZipFile(path) as archive:
+            members = [n for n in archive.namelist() if n.lower().endswith(".shp")]
+    except zipfile.BadZipFile as exc:
+        raise DataValidationError(f"{path} is not a valid zip archive.") from exc
+    if len(members) != 1:
+        raise DataValidationError(
+            f"{path} must hold exactly one shapefile, found {len(members)}."
+        )
+    return f"/vsizip/{path.resolve()}/{members[0]}"
 
 
 @dataclass(frozen=True, slots=True, eq=False)
@@ -152,8 +189,8 @@ class ParcelLayer:
         Only the required attributes are read, to keep memory low.
 
         Args:
-            path: Shapefile (or any OGR-readable vector file, including a
-                ``.zip``) containing the parcels.
+            path: The parcels: ``PT.zip`` as downloaded (read in place), an
+                unzipped shapefile, or any OGR-readable vector file.
             classifier: HCAT classifier. Defaults to the packaged mapping.
             config: Spatial parameters. Defaults to the brief's values.
             overrides: Label-specific corrections. Defaults to the packaged table.
@@ -163,17 +200,12 @@ class ParcelLayer:
 
         Raises:
             FileNotFoundError: If ``path`` does not exist.
-            DataValidationError: If the file lacks a CRS or required attributes.
+            DataValidationError: If the file lacks a CRS or required attributes,
+                or a zip archive does not hold exactly one shapefile.
         """
-        path = Path(path)
-        if not path.exists():
-            raise FileNotFoundError(
-                f"Parcel layer not found at {path}. Download PT.zip from "
-                "https://zenodo.org/records/10118572 and unzip it into data/raw/."
-            )
         logger.info("Reading parcel layer from %s ...", path)
         parcels = gpd.read_file(
-            path, columns=list(SourceColumns.REQUIRED), engine="pyogrio"
+            vector_source(path), columns=list(SourceColumns.REQUIRED), engine="pyogrio"
         )
         return cls(parcels, classifier=classifier, config=config, overrides=overrides)
 

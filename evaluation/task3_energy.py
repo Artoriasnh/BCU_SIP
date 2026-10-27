@@ -14,7 +14,6 @@ import argparse
 import dataclasses
 import logging
 import math
-from collections import defaultdict
 from collections.abc import Mapping, Sequence
 from typing import Any, Final
 
@@ -43,11 +42,19 @@ from dss.energy import (
 from dss.exceptions import EmptyClusterError, SolarDataError
 from dss.hydraulics import size_hydraulics
 from dss.reference_tables import CROP_ARCHETYPES, PUMP_CATALOGUE, CropCategory
-from dss.solar import MONTHS, NasaPowerClient, SolarClimatology, load_power_json
+from dss.solar import MONTHS, NasaPowerClient, SolarClimatology
 from dss.spatial import ParcelCluster, ParcelLayer
-from evaluation.common import SEED, Report, demo_site, markdown_table
-from evaluation.task1_spatial import parcel_sample_points
-from evaluation.task2_solar_hydraulics import FIXTURE, TRANSECT
+from evaluation.common import (
+    FIXTURE,
+    SEED,
+    TRANSECT,
+    Report,
+    demo_site,
+    demo_solar,
+    markdown_table,
+    parcel_sample_points,
+    solar_by_grid_cell,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -570,54 +577,6 @@ def _surplus(
     eng: EnergyConfig,
 ) -> float:
     return energy_balance(selection, psh, basis, hyd, eng).surplus_kwh_day
-
-
-def demo_solar(client: NasaPowerClient, cluster: ParcelCluster) -> SolarClimatology:
-    """Live climatology at the centroid, or the stored response if offline."""
-    try:
-        return client.fetch(cluster.centroid_lat, cluster.centroid_lon)
-    except SolarDataError as exc:
-        logger.warning("NASA POWER unavailable (%s); using the stored response.", exc)
-        return load_power_json(FIXTURE)
-
-
-def solar_by_grid_cell(
-    client: NasaPowerClient, clusters: Sequence[ParcelCluster]
-) -> tuple[list[SolarClimatology], dict[str, Any]]:
-    """Climatology per cluster, requested once per 1-degree cell where valid.
-
-    For each cell the members at the four extremes are fetched. If they agree
-    the value is shared by all members; otherwise every member is fetched.
-    """
-    cells: dict[tuple[int, int], list[int]] = defaultdict(list)
-    for i, c in enumerate(clusters):
-        cells[(math.floor(c.centroid_lat), math.floor(c.centroid_lon))].append(i)
-
-    def fetch(i: int) -> SolarClimatology:
-        return client.fetch(clusters[i].centroid_lat, clusters[i].centroid_lon)
-
-    result: dict[int, SolarClimatology] = {}
-    requests, inconsistent = 0, 0
-    for members in cells.values():
-        probes = {
-            min(members, key=lambda i: clusters[i].centroid_lat),
-            max(members, key=lambda i: clusters[i].centroid_lat),
-            min(members, key=lambda i: clusters[i].centroid_lon),
-            max(members, key=lambda i: clusters[i].centroid_lon),
-        }
-        fetched = {i: fetch(i) for i in probes}
-        requests += len(probes)
-        values = {tuple(s.monthly_psh[m] for m in MONTHS) for s in fetched.values()}
-        if len(values) == 1:
-            shared = next(iter(fetched.values()))
-            result.update({i: fetched.get(i, shared) for i in members})
-        else:
-            inconsistent += 1
-            result.update({i: fetch(i) for i in members})
-            requests += len(members) - len(probes)
-    summary = {"cells": len(cells), "requests": requests,
-               "inconsistent": inconsistent}
-    return [result[i] for i in range(len(clusters))], summary
 
 
 def _batch_row(

@@ -25,4 +25,4 @@ jobs:
       - name: Type-check (mypy)
         run: mypy dss dss_pipeline.py run_demo.py
       - name: Test (pytest)
-        run: pytest --cov=dss --cov-report=term-missing
+        run: pytest --cov=dss --cov=dss_pipeline --cov-report=term-missing

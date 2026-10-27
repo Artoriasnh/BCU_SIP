@@ -38,7 +38,10 @@ CASES: Final[tuple[tuple[str, float, float, Scenario], ...]] = (
 def main() -> None:
     """Run every case and print its outcome."""
     print("Loading and indexing the parcel layer ...")
-    pipeline = DssPipeline.from_file()
+    try:
+        pipeline = DssPipeline.from_file()
+    except FileNotFoundError as exc:
+        raise SystemExit(str(exc)) from None
     for title, lat, lon, scenario in CASES:
         print(f"\n=== {title}: ({lat}, {lon}) ===")
         try:

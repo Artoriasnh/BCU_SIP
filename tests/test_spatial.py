@@ -15,6 +15,7 @@ Layout around the test well (metric CRS, r = 150 m)::
 from __future__ import annotations
 
 import math
+import zipfile
 
 import geopandas as gpd
 import pytest
@@ -24,7 +25,7 @@ from dss.config import GEOGRAPHIC_CRS, METRIC_CRS, SpatialConfig
 from dss.exceptions import EMPTY_CLUSTER_MESSAGE, DataValidationError, EmptyClusterError
 from dss.reference_tables import CropCategory
 from dss.schema import ParcelColumns, SourceColumns
-from dss.spatial import ParcelLayer
+from dss.spatial import ParcelLayer, vector_source
 from dss.taxonomy import AGRICULTURAL_LAND_COVER
 
 WELL_LAT, WELL_LON = 38.5, -8.0
@@ -276,3 +277,52 @@ class TestRobustness:
 
         cluster = layer.extract_cluster(np.float64(WELL_LAT), np.float32(WELL_LON))
         assert isinstance(cluster.query_lat, float)
+
+
+class TestReadingFiles:
+    """PT.zip is read in place; the archive layout does not matter."""
+
+    def _zipped(self, frame, tmp_path, folder="PT/"):
+        frame.to_file(tmp_path / "parcels.shp", engine="pyogrio")
+        archive = tmp_path / "parcels.zip"
+        with zipfile.ZipFile(archive, "w") as zipped:
+            for part in tmp_path.glob("parcels.*"):
+                if part.suffix != ".zip":
+                    zipped.write(part, f"{folder}{part.name}")
+        return archive
+
+    @pytest.mark.parametrize("folder", ["PT/", ""])
+    def test_zip_gives_the_same_cluster_as_the_frame(
+        self, synthetic_frame, tmp_path, folder
+    ):
+        archive = self._zipped(synthetic_frame, tmp_path, folder)
+        from_zip = ParcelLayer.from_file(archive).extract_cluster(WELL_LAT, WELL_LON)
+        direct = ParcelLayer(synthetic_frame).extract_cluster(WELL_LAT, WELL_LON)
+        assert from_zip.n_parcels == direct.n_parcels
+        assert from_zip.total_area_clipped_ha == pytest.approx(
+            direct.total_area_clipped_ha
+        )
+
+    def test_plain_file_path_is_unchanged(self, tmp_path):
+        shapefile = tmp_path / "a.shp"
+        shapefile.write_text("")
+        assert vector_source(shapefile) == str(shapefile)
+
+    def test_missing_file(self, tmp_path):
+        with pytest.raises(FileNotFoundError, match=r"PT\.zip"):
+            ParcelLayer.from_file(tmp_path / "missing.zip")
+
+    @pytest.mark.parametrize("members", [["readme.txt"], ["a.shp", "b/b.SHP"]])
+    def test_archive_must_hold_one_shapefile(self, tmp_path, members):
+        archive = tmp_path / "x.zip"
+        with zipfile.ZipFile(archive, "w") as zipped:
+            for name in members:
+                zipped.writestr(name, "")
+        with pytest.raises(DataValidationError, match="exactly one shapefile"):
+            vector_source(archive)
+
+    def test_corrupt_archive(self, tmp_path):
+        archive = tmp_path / "x.zip"
+        archive.write_text("not a zip")
+        with pytest.raises(DataValidationError, match="not a valid zip"):
+            vector_source(archive)

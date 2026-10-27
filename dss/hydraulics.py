@@ -17,11 +17,10 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
 
-import pandas as pd
-
 from dss.config import J_PER_KWH, HydraulicConfig
 from dss.exceptions import DataValidationError
 from dss.reference_tables import CROP_ARCHETYPES, CropArchetype, CropCategory
+from dss.validation import AreaTable, validate_areas
 
 
 @dataclass(frozen=True, slots=True)
@@ -43,7 +42,7 @@ class HydraulicDemand:
 
 
 def water_demand_by_category(
-    area_by_category_ha: Mapping[CropCategory, float] | pd.Series,
+    area_by_category_ha: AreaTable,
     archetypes: Mapping[CropCategory, CropArchetype] = CROP_ARCHETYPES,
 ) -> dict[CropCategory, float]:
     """Peak daily water demand per crop archetype.
@@ -59,14 +58,11 @@ def water_demand_by_category(
         DataValidationError: If an area is negative or not finite, or an
             archetype has no reference parameters.
     """
-    demand: dict[CropCategory, float] = {}
-    for key, area_ha in area_by_category_ha.items():
-        category = _as_category(key, archetypes)
-        area = float(area_ha)
-        if not math.isfinite(area) or area < 0:
-            raise DataValidationError(f"Area for {category!r} is invalid: {area_ha}.")
-        demand[category] = area * archetypes[category].water_demand_m3_per_ha_day
-    return demand
+    areas = validate_areas(area_by_category_ha, archetypes)
+    return {
+        category: area * archetypes[category].water_demand_m3_per_ha_day
+        for category, area in areas.items()
+    }
 
 
 def required_pump_power_kw(
@@ -101,7 +97,7 @@ def required_pump_power_kw(
 
 
 def size_hydraulics(
-    area_by_category_ha: Mapping[CropCategory, float] | pd.Series,
+    area_by_category_ha: AreaTable,
     config: HydraulicConfig | None = None,
     archetypes: Mapping[CropCategory, CropArchetype] = CROP_ARCHETYPES,
 ) -> HydraulicDemand:
@@ -125,21 +121,3 @@ def size_hydraulics(
         flow_rate_m3_h=daily_demand / cfg.pumping_hours_per_day,
         required_power_kw=required_pump_power_kw(daily_demand, cfg),
     )
-
-
-def _as_category(
-    key: object, archetypes: Mapping[CropCategory, CropArchetype]
-) -> CropCategory:
-    """Return ``key`` as a crop archetype that has reference parameters.
-
-    Raises:
-        DataValidationError: If ``key`` is not a known archetype.
-    """
-    category: CropCategory | None
-    try:
-        category = CropCategory(key)
-    except ValueError:
-        category = None
-    if category is None or category not in archetypes:
-        raise DataValidationError(f"No reference parameters for {key!r}.")
-    return category

@@ -94,3 +94,46 @@ PUMP_CATALOGUE: Final[tuple[PumpTier, ...]] = (
     PumpTier("Tier 3", 7.5, 10.0, 14_000.0, 580.0),
     PumpTier("Tier 4", 11.0, 15.0, 19_500.0, 850.0),
 )
+
+
+@dataclass(frozen=True, slots=True)
+class PueAsset:
+    """One Productive Use of Energy asset.
+
+    The brief's three uplift formulas share one form:
+
+        uplift = sum over compatible crops of harvest_kg * harvest_share * value
+
+    where ``value`` is the crop's farmgate price if ``value_usd_per_kg`` is
+    ``None`` (cold room: avoided spoilage), else the fixed fee or premium.
+
+    Attributes:
+        name: Asset label.
+        compatible: Crop archetypes the asset can process.
+        daily_load_kwh: Daily electricity consumption, kWh/day.
+        capex_usd: Installed capital cost, USD.
+        harvest_share: Fraction of the compatible harvest that earns the uplift.
+        value_usd_per_kg: Fixed value per kg, or ``None`` for the farmgate price.
+    """
+
+    name: str
+    compatible: frozenset[CropCategory]
+    daily_load_kwh: float
+    capex_usd: float
+    harvest_share: float
+    value_usd_per_kg: float | None
+
+
+# Source: assessment brief, Section 3E "Reference Table 3: Productive Use of Energy
+# (PUE) Catalog" and the Task 4 tips. Milling applies to the whole grain harvest.
+PUE_CATALOGUE: Final[tuple[PueAsset, ...]] = (
+    PueAsset("Cold Room (5 MT)",
+             frozenset({CropCategory.ORCHARDS, CropCategory.VEGETABLES}),
+             20.0, 6_000.0, 0.20, None),
+    PueAsset("Grain Milling Unit", frozenset({CropCategory.CEREALS}),
+             25.0, 4_500.0, 1.00, 0.05),
+    PueAsset("Solar Hybrid Dryer",
+             frozenset({CropCategory.CEREALS, CropCategory.ORCHARDS,
+                        CropCategory.VEGETABLES}),
+             10.0, 2_500.0, 0.15, 0.12),
+)

@@ -64,6 +64,7 @@ dss/                 Engine package (one module per concern)
   solar.py           Task 2: NASA POWER client (timeouts, retries, caching, units)
   hydraulics.py      Task 2: water demand and required pump power
   energy.py          Task 3: pump selection and PV energy balance
+  economics.py       Task 4: PUE selection and simple payback
   resources/hcat_mapping.csv      Versioned HCAT mapping (single source of truth)
   resources/label_overrides.csv   Corrections of EuroCrops harmonisation errors
 evaluation/          One evaluation script per task, with generated reports

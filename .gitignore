@@ -12,6 +12,7 @@ data/raw/
 # --- Recruitment documents and internal notes (not part of the submission) ---
 *.pdf
 PROJECT_NOTES.md
+docs/
 
 # --- Python ---
 __pycache__/

@@ -8,6 +8,7 @@ validated dataclasses.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Final
@@ -191,3 +192,37 @@ class EnergyConfig:
         """
         if not 0 < self.pv_derate <= 1:
             raise ValueError(f"pv_derate must be in (0, 1], got {self.pv_derate}.")
+
+
+@dataclass(frozen=True, slots=True)
+class EconomicConfig:
+    """Financial conventions for Task 4.
+
+    Attributes:
+        harvests_per_year: Harvests per year; the brief's yields are per
+            season and one season per year is assumed.
+        annual_om_fraction: Annual operation and maintenance cost of the PUE
+            asset as a fraction of its CAPEX. Not given in the brief, so 0 for
+            headline results; 0.045 is used in sensitivity runs (solar cold
+            rooms in Nigeria: O&M USD 1,704-1,904/year for about USD 40,000 of
+            construction cost, i.e. 4.3-4.8 %; Takeshima et al. 2021, IFPRI
+            Discussion Paper 02047, Table 13).
+    """
+
+    harvests_per_year: float = 1.0
+    annual_om_fraction: float = 0.0
+
+    def __post_init__(self) -> None:
+        """Validate parameter ranges.
+
+        Raises:
+            ValueError: If a parameter is out of range.
+        """
+        if not (math.isfinite(self.harvests_per_year) and self.harvests_per_year > 0):
+            raise ValueError(
+                f"harvests_per_year must be > 0, got {self.harvests_per_year}."
+            )
+        if not 0 <= self.annual_om_fraction < 1:
+            raise ValueError(
+                f"annual_om_fraction must be in [0, 1), got {self.annual_om_fraction}."
+            )

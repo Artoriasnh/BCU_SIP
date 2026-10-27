@@ -87,7 +87,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     layer = ParcelLayer.from_file(DEFAULT_PARCELS_PATH)
     cluster = layer.extract_cluster(lat, lon)
     client = NasaPowerClient()
-    solar = _demo_solar(client, cluster)
+    solar = demo_solar(client, cluster)
 
     evaluate_demo(report, cluster, solar)
     evaluate_threshold(report, client)
@@ -283,7 +283,7 @@ def evaluate_batch(
         except EmptyClusterError:
             continue
     try:
-        solar_by_cluster, grouping = _solar_by_grid_cell(client, clusters)
+        solar_by_cluster, grouping = solar_by_grid_cell(client, clusters)
     except SolarDataError as exc:
         report.add_section("3. Batch run over random wells", f"Skipped: {exc}")
         return
@@ -306,21 +306,26 @@ def evaluate_batch(
     stats = pd.DataFrame(
         {
             "Statistic": [
-                "Clusters", "Median required power (kW)", "Max required power (kW)",
+                "Clusters", "Median parcels per cluster",
+                "Median clipped area (ha)",
+                "Median required power (kW)", "Max required power (kW)",
                 "Multiple pumps required",
                 "Demand above catalogue delivery (warning)",
                 "Annual surplus > 0, rated (headline)",
                 "Annual surplus > 0, demand (sensitivity)",
-                "Median surplus months, rated",
+                "Surplus months, rated (min-max)",
                 "Median annual surplus, demand (kWh/day)",
             ],
             "Value": [
-                f"{n:,}", f"{frame['P_req_kW'].median():.2f}",
+                f"{n:,}", f"{frame['n_parcels'].median():.0f}",
+                f"{frame['area_ha'].median():.2f}",
+                f"{frame['P_req_kW'].median():.2f}",
                 f"{frame['P_req_kW'].max():.2f}",
                 _share(frame["n_pumps"] > 1), _share(frame["exceeds_delivery"]),
                 _share(frame["surplus_rated_kwh"] > 0),
                 _share(frame["surplus_demand_kwh"] > 0),
-                f"{frame['surplus_months_rated'].median():.0f}",
+                f"{frame['surplus_months_rated'].min()}-"
+                f"{frame['surplus_months_rated'].max()}",
                 f"{frame['surplus_demand_kwh'].median():.1f}",
             ],
         }
@@ -335,6 +340,33 @@ def evaluate_batch(
         (a.water_demand_m3_per_ha_day, k) for k, a in CROP_ARCHETYPES.items()
     )
     max_power = size_hydraulics({top: max_area}).required_power_kw
+    n_multi = int((frame["n_pumps"] > 1).sum())
+    pump_note = (
+        "No cluster in this sample needs more than one pump: clusters in this "
+        f"dataset are small (median {frame['area_ha'].median():.2f} ha)."
+        if n_multi == 0
+        else f"{n_multi} clusters in this sample need more than one pump."
+    )
+    months = frame["surplus_months_rated"]
+    months_note = (
+        f"Every cluster has {months.min()} surplus months under the rated "
+        "consumption: the threshold (about 5.9 PSH) is set by the catalogue, and "
+        "the monthly irradiance varies little across the sampled grid cells."
+        if months.min() == months.max()
+        else f"Clusters have {months.min()}-{months.max()} surplus months under "
+        "the rated consumption; as the threshold is set by the catalogue, the "
+        "differences come from irradiance alone."
+    )
+    zero = frame[frame["surplus_demand_kwh"] <= 0]
+    load = zero["P_req_kW"] / zero["motor_kW"]
+    zero_note = (
+        f"The demand-based surplus is zero for {len(zero)} clusters, whose "
+        f"required power is {load.min():.0%}-{load.max():.0%} of the installed "
+        "motor power: when the pump is sized close to the demand, even "
+        "demand-based pumping uses all the PV output."
+        if len(zero)
+        else "The demand-based surplus is positive for every cluster."
+    )
     report.add_section(
         "3. Batch run over random wells",
         f"""
@@ -357,11 +389,11 @@ CAPEX; demand-based surplus >= rated surplus.
 
 {figure}
 
-Required power is small because a 150 m radius encloses at most
-{max_area:.2f} ha: even fully irrigated at the highest demand coefficient
-({max_coeff:g} m3/ha/day) a cluster needs {max_power:.1f} kW, so several pumps
-are needed only for clusters dominated by that archetype. The catalogue's
-delivery column is flagged rather than used (Task 2 report, section 6).
+A 150 m radius encloses at most {max_area:.2f} ha; even fully irrigated at the
+highest demand coefficient ({max_coeff:g} m3/ha/day) a cluster needs
+{max_power:.1f} kW, so several pumps are possible only for clusters dominated by
+that archetype. {pump_note} {months_note} {zero_note} The catalogue's delivery
+column is flagged rather than used (Task 2 report, section 6).
 """,
     )
 
@@ -540,7 +572,7 @@ def _surplus(
     return energy_balance(selection, psh, basis, hyd, eng).surplus_kwh_day
 
 
-def _demo_solar(client: NasaPowerClient, cluster: ParcelCluster) -> SolarClimatology:
+def demo_solar(client: NasaPowerClient, cluster: ParcelCluster) -> SolarClimatology:
     """Live climatology at the centroid, or the stored response if offline."""
     try:
         return client.fetch(cluster.centroid_lat, cluster.centroid_lon)
@@ -549,7 +581,7 @@ def _demo_solar(client: NasaPowerClient, cluster: ParcelCluster) -> SolarClimato
         return load_power_json(FIXTURE)
 
 
-def _solar_by_grid_cell(
+def solar_by_grid_cell(
     client: NasaPowerClient, clusters: Sequence[ParcelCluster]
 ) -> tuple[list[SolarClimatology], dict[str, Any]]:
     """Climatology per cluster, requested once per 1-degree cell where valid.
@@ -612,6 +644,7 @@ def _batch_row(
         "lat": round(cluster.centroid_lat, 5), "lon": round(cluster.centroid_lon, 5),
         "n_parcels": cluster.n_parcels, "area_ha": cluster.total_area_clipped_ha,
         "Q_m3_day": q_day, "P_req_kW": power, "selection": identical.label,
+        "motor_kW": identical.motor_kw,
         "n_pumps": identical.n_units, "capex_identical": identical.capex_usd,
         "capex_least_cost": cheapest.capex_usd,
         "exceeds_delivery": identical.exceeds_catalogue_delivery,
@@ -653,13 +686,15 @@ def _batch_figure(report: Report, frame: pd.DataFrame) -> str:
         left.axvline(tier.motor_kw, color="grey", lw=0.8, ls=":")
         left.text(tier.motor_kw, left.get_ylim()[1] * 0.95, tier.name, rotation=90,
                   fontsize=7, ha="right", va="top")
-    left.set(xlabel="Required power (kW)", ylabel="Clusters",
+    x_max = 1.05 * max(frame["P_req_kW"].max(),
+                       max(t.motor_kw for t in PUMP_CATALOGUE))
+    left.set(xlabel="Required power (kW)", ylabel="Clusters", xlim=(0, x_max),
              title="Required power and tier limits")
-    counts = frame["surplus_months_rated"].value_counts().reindex(range(13),
-                                                                  fill_value=0)
-    right.bar(counts.index, counts.to_numpy(), color=SURPLUS_COLOUR)
-    right.set(xlabel="Months with surplus (rated)", ylabel="Clusters",
-              title="Seasonal surplus", xticks=range(0, 13, 2))
+    right.scatter(frame["P_req_kW"], frame["surplus_demand_kwh"], s=10,
+                  color=SURPLUS_COLOUR, alpha=0.7)
+    right.axhline(0, color="k", lw=0.8)
+    right.set(xlabel="Required power (kW)", ylabel="kWh/day", xlim=(0, x_max),
+              title="Annual surplus, demand basis (sensitivity)")
     return report.save_figure(fig, "batch", "Batch run over random wells.")
 
 

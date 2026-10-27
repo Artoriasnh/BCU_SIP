@@ -7,6 +7,7 @@ Modules:
     solar: Task 2, NASA POWER solar climatology.
     hydraulics: Task 2, water demand and required pump power.
     energy: Task 3, pump selection and PV energy balance.
+    economics: Task 4, PUE selection and simple payback.
 
 Geospatial classes are imported lazily, so ``dss.taxonomy`` works without the
 geospatial stack.
@@ -16,6 +17,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from dss.economics import (
+    InvestmentStatus,
+    PueDecision,
+    evaluate_pue,
+    feasible_assets_by_month,
+)
 from dss.energy import (
     EnergyBalance,
     EnergyBasis,
@@ -51,14 +58,18 @@ __all__ = [
     "EnergyBasis",
     "HcatClassifier",
     "HydraulicDemand",
+    "InvestmentStatus",
     "NasaPowerClient",
     "ParcelCluster",
     "ParcelLayer",
+    "PueDecision",
     "PumpSelection",
     "PumpStrategy",
     "SolarClimatology",
     "SolarDataError",
     "energy_balance",
+    "evaluate_pue",
+    "feasible_assets_by_month",
     "monthly_energy_balance",
     "select_pumps",
     "size_hydraulics",

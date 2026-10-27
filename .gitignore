@@ -1,0 +1,40 @@
+# --- Raw data (too large for GitHub; see README for download instructions) ---
+PT/
+data/raw/
+*.zip
+*.shp
+*.shx
+*.dbf
+*.prj
+*.cpg
+*.qmd
+
+# --- Recruitment documents and internal notes (not part of the submission) ---
+*.pdf
+PROJECT_NOTES.md
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# --- Virtual environments ---
+.venv/
+venv/
+env/
+
+# --- Tooling caches ---
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+
+# --- IDE / OS ---
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

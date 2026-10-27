@@ -1,0 +1,83 @@
+# Copyright (c) 2026 Hao Ni. All rights reserved.
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agri-energy-dss"
+version = "0.1.0"
+description = "Prototype computational engine of an agri-energy Decision Support System: parcel clustering, solar irrigation sizing and productive use of energy (PUE) appraisal."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Proprietary. Copyright (c) 2026 Hao Ni. All rights reserved." }
+authors = [{ name = "Hao Ni" }]
+dependencies = [
+    "geopandas>=0.14,<2",
+    "pyogrio>=0.7",
+    "shapely>=2.0,<3",
+    "pyproj>=3.6",
+    "pandas>=2.0,<3",
+    "numpy>=1.24",
+    "requests>=2.31,<3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "ruff>=0.4",
+    "mypy>=1.8",
+    "pandas-stubs",
+    "types-requests",
+    "jupyter",
+    "matplotlib",
+]
+
+[tool.setuptools.packages.find]
+include = ["dss*"]
+
+[tool.setuptools.package-data]
+dss = ["resources/*.csv"]
+
+# ---------------------------------------------------------------------------
+# Code style: PEP 8 + Google Python Style Guide, enforced by ruff.
+# ---------------------------------------------------------------------------
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E", "W",   # pycodestyle (PEP 8)
+    "F",        # pyflakes
+    "I",        # isort
+    "N",        # pep8-naming
+    "D",        # pydocstyle (Google convention below)
+    "UP",       # pyupgrade
+    "B",        # flake8-bugbear
+    "ANN",      # type annotations
+    "SIM",      # simplifications
+    "RUF",      # ruff-specific rules
+]
+ignore = ["ANN401"]  # geopandas objects are untyped; Any is unavoidable in places
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D", "ANN"]
+
+[tool.mypy]
+python_version = "3.10"
+disallow_untyped_defs = true
+no_implicit_optional = true
+warn_return_any = true
+warn_unused_ignores = true
+ignore_missing_imports = true  # geopandas, shapely, pyogrio and pyproj ship no type stubs
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+markers = [
+    "integration: requires the EuroCrops Portugal dataset under data/raw/PT/",
+]

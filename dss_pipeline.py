@@ -319,7 +319,8 @@ class PipelineResult:
             f"{CROP_ARCHETYPES[k].name} {v:.3f} ha"
             for k, v in site.area_by_category_ha.items()
         )
-        parcels = f"{site.cluster.n_parcels} parcels, " if site.cluster else ""
+        n = site.cluster.n_parcels if site.cluster else 0
+        parcels = f"{n} parcel{'s' if n != 1 else ''}, " if site.cluster else ""
         months_by_asset: dict[str, list[str]] = {}
         for month, assets in self.seasonal_assets.items():
             for asset in assets:

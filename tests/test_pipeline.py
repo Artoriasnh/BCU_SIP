@@ -138,6 +138,11 @@ class TestOutputs:
             assert marker in text
 
 
+def test_summary_uses_singular_for_one_parcel(solar):
+    site = Site(*DEMO_SITE, DEMO_AREAS, solar, FakeCluster(*DEMO_SITE, n_parcels=1))
+    assert "Cluster: 1 parcel, " in appraise(site).summary()
+
+
 class TestDssPipeline:
     def test_run_queries_solar_at_the_centroid(self, solar):
         client = FakeClient(solar)

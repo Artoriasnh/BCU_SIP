@@ -56,6 +56,19 @@ The brief's example point (38.015, -7.865) has no parcel within 150 m in the
 supplied sample and raises `EmptyClusterError`; the demonstration site is the
 nearest location satisfying a fixed rule ([ASSUMPTIONS.md, A4](ASSUMPTIONS.md#a4-sparse-dataset-and-the-briefs-example-point)).
 
+`python run_demo.py` runs every outcome the engine can return. The vegetable and
+pasture sites are selected by fixed rules from the 300 random wells of the
+[Task 4 evaluation](evaluation/results/task4/REPORT.md) and reproduce its rows.
+
+| Case | Scenario | Outcome |
+|---|---|---|
+| Demonstration site: cereals and fallback crops | Brief's parameters | `insufficient_surplus` (no surplus) |
+| Demonstration site | Demand-based consumption | Dryer, payback 26.3 years |
+| Vegetable site, 0.50 ha (shortest payback in the batch) | Demand-based consumption | Dryer, payback 11.2 years; cold room feasible in June-August |
+| Pasture-only site (nearest to the demonstration site) | Brief's parameters | `no_compatible_crops` |
+| Brief's example point, central Lisbon, Atlantic Ocean | - | `EmptyClusterError` |
+| Latitude 95 | - | `DataValidationError` |
+
 ## Three findings that shape the results
 
 * **The brief's HCAT table matches no parcel.** Every code in the data starts
@@ -70,7 +83,12 @@ nearest location satisfying a fixed rule ([ASSUMPTIONS.md, A4](ASSUMPTIONS.md#a4
   investment", reported as a structured outcome, and the engine adds a monthly
   screening and a demand-based consumption scenario
   ([A7](ASSUMPTIONS.md#a7-the-annual-surplus-is-zero-everywhere),
-  [A13](ASSUMPTIONS.md#a13-demand-based-pump-consumption-sensitivity)).
+  [A13](ASSUMPTIONS.md#a13-demand-based-pump-consumption-sensitivity)). Even
+  then the catalogue's PV arrays cannot power the cold room or the mill
+  anywhere in mainland Portugal; only the dryer is reachable. This is a limit
+  of the catalogue, not of the model: with 20 kWh/day of surplus, a 1 ha
+  vegetable cluster pays back a cold room in 2.0 years
+  ([Task 4 evaluation](evaluation/results/task4/REPORT.md), section 2).
 
 ## Where to find each rubric criterion
 

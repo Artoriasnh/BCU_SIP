@@ -39,7 +39,7 @@ from dss.energy import (
     select_pumps,
     surplus_threshold_psh,
 )
-from dss.exceptions import EmptyClusterError, SolarDataError
+from dss.exceptions import SolarDataError
 from dss.hydraulics import size_hydraulics
 from dss.reference_tables import CROP_ARCHETYPES, PUMP_CATALOGUE, CropCategory
 from dss.solar import MONTHS, NasaPowerClient, SolarClimatology
@@ -49,10 +49,11 @@ from evaluation.common import (
     SEED,
     TRANSECT,
     Report,
+    SampledWell,
     demo_site,
     demo_solar,
     markdown_table,
-    parcel_sample_points,
+    sample_wells,
     solar_by_grid_cell,
 )
 
@@ -282,22 +283,18 @@ def evaluate_batch(
     report: Report, layer: ParcelLayer, client: NasaPowerClient, sample_size: int
 ) -> None:
     """Run the full Task 1-3 chain for random wells and test invariants."""
-    rng = np.random.default_rng(SEED)
-    clusters = []
-    for lat, lon in parcel_sample_points(layer, sample_size, rng):
-        try:
-            clusters.append(layer.extract_cluster(lat, lon))
-        except EmptyClusterError:
-            continue
+    wells = sample_wells(layer, sample_size, np.random.default_rng(SEED))
     try:
-        solar_by_cluster, grouping = solar_by_grid_cell(client, clusters)
+        solar_by_cluster, grouping = solar_by_grid_cell(
+            client, [w.cluster for w in wells]
+        )
     except SolarDataError as exc:
         report.add_section("3. Batch run over random wells", f"Skipped: {exc}")
         return
 
     rows, violations = [], 0
-    for cluster, solar in zip(clusters, solar_by_cluster, strict=True):
-        row, ok = _batch_row(cluster, solar)
+    for well, solar in zip(wells, solar_by_cluster, strict=True):
+        row, ok = _batch_row(well, solar)
         rows.append(row)
         violations += not ok
     frame = pd.DataFrame(rows)
@@ -580,9 +577,10 @@ def _surplus(
 
 
 def _batch_row(
-    cluster: ParcelCluster, solar: SolarClimatology
+    well: SampledWell, solar: SolarClimatology
 ) -> tuple[dict[str, Any], bool]:
-    """Results for one cluster and whether all invariants hold."""
+    """Results for one well's cluster and whether all invariants hold."""
+    cluster = well.cluster
     demand = size_hydraulics(_areas(cluster))
     power, q_day = demand.required_power_kw, demand.daily_demand_m3
     identical = select_pumps(power, q_day, IDENTICAL)
@@ -600,7 +598,9 @@ def _batch_row(
                 >= monthly[RATED][m].surplus_kwh_day for m in MONTHS)
     )
     row = {
-        "lat": round(cluster.centroid_lat, 5), "lon": round(cluster.centroid_lon, 5),
+        "well_lat": round(well.lat, 6), "well_lon": round(well.lon, 6),
+        "centroid_lat": round(cluster.centroid_lat, 5),
+        "centroid_lon": round(cluster.centroid_lon, 5),
         "n_parcels": cluster.n_parcels, "area_ha": cluster.total_area_clipped_ha,
         "Q_m3_day": q_day, "P_req_kW": power, "selection": identical.label,
         "motor_kW": identical.motor_kw,

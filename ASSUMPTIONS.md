@@ -25,7 +25,7 @@ in a labelled sensitivity run, with its source cited.
 | [A10](#a10-operation-and-maintenance-costs) | O&M costs | Zero; 4.5 % of CAPEX as sensitivity | None |
 | [A11](#a11-uplift-conventions) | Uplift conventions | One harvest a year; shares as in Table 3 | Defines the uplift |
 | [A12](#a12-horizontal-irradiance-as-peak-sun-hours) | Irradiance plane | Horizontal irradiance used as PSH | Conservative |
-| [A13](#a13-demand-based-pump-consumption-sensitivity) | Pump consumption | Rated power (brief); demand-based as sensitivity | None |
+| [A13](#a13-demand-based-pump-consumption-sensitivity) | Pump consumption | Rated power (brief); demand-based as sensitivity | None; even then only the dryer is reachable |
 
 Two inconsistencies in the brief's reference data are reported as findings
 rather than corrected: see [F1](#f1-pump-catalogue-delivery) and
@@ -245,10 +245,20 @@ the surplus that arises when irrigation demand is below pump capacity is the
 quantity of interest for productive use.
 
 **Effect.** At the demonstration site the annual surplus rises from 0 to
-10.7 kWh/day and a dryer becomes feasible (payback 26.3 years).
+10.7 kWh/day and a dryer becomes feasible (payback 26.3 years). Even with
+demand-based consumption, however, the catalogue cannot power the cold room
+(20 kWh/day) or the mill (25 kWh/day) anywhere in mainland Portugal on an
+annual basis: a larger pump is selected only when the demand, and therefore
+the consumption, is larger, so the largest possible surplus is that of a
+Tier 1 system with almost no demand, 18.8 kWh/day at Faro's annual mean of
+5.01 PSH. The dryer is the only reachable asset. The engine does select
+profitable assets when the energy exists: with 20 kWh/day of surplus, a 1 ha
+vegetable cluster pays back a cold room in 2.0 years (Task 4 evaluation,
+section 2).
 
 **Where.** `dss/energy.py` (`EnergyBasis.DEMAND`); `python dss_pipeline.py
---demand-based`; Task 3 evaluation, section 1.
+--demand-based`; Task 3 evaluation, section 1; Task 4 evaluation, section 4
+(reachable assets per pump configuration).
 
 ---
 

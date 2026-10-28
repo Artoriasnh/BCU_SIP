@@ -35,7 +35,7 @@ import numpy as np
 import pandas as pd
 
 from dss.config import GEOGRAPHIC_CRS, PROJECT_ROOT
-from dss.exceptions import SolarDataError
+from dss.exceptions import EmptyClusterError, SolarDataError
 from dss.solar import MONTHS, NasaPowerClient, SolarClimatology, load_power_json
 
 if TYPE_CHECKING:  # pragma: no cover - geospatial types only
@@ -239,6 +239,40 @@ def _git_commit() -> str:
     except (OSError, subprocess.SubprocessError):
         return "unknown"
     return result.stdout.strip()
+
+
+def haversine_km(lat1: Any, lon1: Any, lat2: Any, lon2: Any) -> Any:
+    """Great-circle distance in km (mean Earth radius 6371 km); vectorised."""
+    p1, p2 = np.radians(lat1), np.radians(lat2)
+    dp, dl = p2 - p1, np.radians(np.asarray(lon2) - np.asarray(lon1))
+    a = np.sin(dp / 2) ** 2 + np.cos(p1) * np.cos(p2) * np.sin(dl / 2) ** 2
+    return 2 * 6371.0 * np.arcsin(np.sqrt(a))
+
+
+@dataclass(frozen=True, slots=True)
+class SampledWell:
+    """A well at a random agricultural parcel and its cluster."""
+
+    lat: float
+    lon: float
+    cluster: ParcelCluster
+
+
+def sample_wells(
+    layer: ParcelLayer, n: int, rng: np.random.Generator
+) -> list[SampledWell]:
+    """Wells at ``n`` random agricultural parcels, with their clusters.
+
+    The well coordinates are kept so that any cluster can be reproduced by
+    running the pipeline at the same well.
+    """
+    wells = []
+    for lat, lon in parcel_sample_points(layer, n, rng):
+        try:
+            wells.append(SampledWell(lat, lon, layer.extract_cluster(lat, lon)))
+        except EmptyClusterError:  # pragma: no cover - parcel points are inside
+            continue
+    return wells
 
 
 def parcel_sample_points(

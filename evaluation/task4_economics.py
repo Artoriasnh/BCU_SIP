@@ -26,6 +26,7 @@ from dss.config import (
     M2_PER_HA,
     EconomicConfig,
     EnergyConfig,
+    HydraulicConfig,
     SpatialConfig,
 )
 from dss.economics import (
@@ -36,19 +37,26 @@ from dss.economics import (
     feasible_assets_by_month,
 )
 from dss.energy import EnergyBasis, energy_balance, monthly_energy_balance, select_pumps
-from dss.exceptions import EmptyClusterError, SolarDataError
+from dss.exceptions import SolarDataError
 from dss.hydraulics import size_hydraulics
-from dss.reference_tables import CROP_ARCHETYPES, PUE_CATALOGUE, CropCategory
+from dss.reference_tables import (
+    CROP_ARCHETYPES,
+    PUE_CATALOGUE,
+    PUMP_CATALOGUE,
+    CropCategory,
+)
 from dss.solar import MONTHS, NasaPowerClient, SolarClimatology
 from dss.spatial import ParcelCluster, ParcelLayer
 from evaluation.common import (
     FIXTURE,
     SEED,
     Report,
+    SampledWell,
     demo_site,
     demo_solar,
+    haversine_km,
     markdown_table,
-    parcel_sample_points,
+    sample_wells,
     solar_by_grid_cell,
 )
 
@@ -107,7 +115,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     evaluate_demo(report, cluster, solar)
     evaluate_decision_logic(report)
     evaluate_edge_cases(report)
-    batch = evaluate_batch(report, layer, client, args.sample_size)
+    batch = evaluate_batch(report, layer, client, args.sample_size, (lat, lon))
     evaluate_cold_room(report, batch)
 
     print(f"Report written to {report.write()}")
@@ -314,25 +322,23 @@ Example of the structured result returned when there is no investment:
 # 4. Batch run over random wells
 # ---------------------------------------------------------------------------
 def evaluate_batch(
-    report: Report, layer: ParcelLayer, client: NasaPowerClient, sample_size: int
+    report: Report,
+    layer: ParcelLayer,
+    client: NasaPowerClient,
+    sample_size: int,
+    demo: tuple[float, float],
 ) -> pd.DataFrame | None:
-    """Full Task 1-4 chain for random wells; invariants and distributions."""
-    rng = np.random.default_rng(SEED)
-    clusters = []
-    for lat, lon in parcel_sample_points(layer, sample_size, rng):
-        try:
-            clusters.append(layer.extract_cluster(lat, lon))
-        except EmptyClusterError:
-            continue
+    """Full Task 1-4 chain for random wells; invariants, distributions, sites."""
+    wells = sample_wells(layer, sample_size, np.random.default_rng(SEED))
     try:
-        solar_by_cluster, _ = solar_by_grid_cell(client, clusters)
+        solar_by_cluster, _ = solar_by_grid_cell(client, [w.cluster for w in wells])
     except SolarDataError as exc:
         report.add_section("4. Batch run over random wells", f"Skipped: {exc}")
         return None
 
     rows, violations = [], 0
-    for cluster, solar in zip(clusters, solar_by_cluster, strict=True):
-        row, ok = _batch_row(cluster, solar)
+    for well, solar in zip(wells, solar_by_cluster, strict=True):
+        row, ok = _batch_row(well, solar)
         rows.append(row)
         violations += not ok
     frame = pd.DataFrame(rows)
@@ -368,26 +374,7 @@ def evaluate_batch(
     seasonal = seasonal[(seasonal.iloc[:, 1:] > 0).any(axis=1)]
     figure = _batch_figure(report, frame)
     max_psh = float(frame["annual_psh"].max())
-    derate = EnergyConfig().pv_derate
-    reach = (
-        frame.groupby(["pumps", "pv_kwp"]).size().rename("Clusters").reset_index()
-        .sort_values("pv_kwp")
-    )
-    reach["Max E_PV (kWh/day)"] = reach["pv_kwp"] * max_psh * derate
-    reach["Assets within reach"] = [
-        ", ".join(_short(a.name) for a in PUE_CATALOGUE if a.daily_load_kwh <= ceiling)
-        or "none"
-        for ceiling in reach["Max E_PV (kWh/day)"]
-    ]
-    reach = reach.rename(columns={"pumps": "Pumps", "pv_kwp": "PV (kWp)"})
-    dryer_only = reach.loc[reach["Assets within reach"] == "Dryer", "Clusters"].sum()
-    reach_note = (
-        f"For {dryer_only} of {len(frame)} clusters the dryer is the only asset the "
-        "PV array could ever power on an annual basis, whatever the consumption "
-        "assumption; the cold room and the mill need a larger array."
-        if dryer_only
-        else "Every cluster's PV array could in principle power more than the dryer."
-    )
+    reach, reach_note = _reach_table(frame, max_psh)
     invest = [int(frame[f"payback_{i}"].notna().sum()) for i in range(len(SCENARIOS))]
     summary = (
         f"Clusters with an investment: {invest[0]} of {len(frame)} under the "
@@ -421,13 +408,18 @@ requirements):
 
 {figure}
 
-**Which assets are reachable.** Even with no pump consumption, the surplus
-cannot exceed the PV generation `PV_kWp x PSH x derate`. At the sunniest sampled
-grid cell (annual PSH {max_psh:.2f}) this ceiling is:
+**Which assets are reachable.** A larger pump is selected only when the
+demand, and therefore the consumption, is larger. Even with demand-based
+consumption the surplus of a pump configuration therefore cannot exceed
+`PV_kWp x PSH x derate - t_pump x P_min`, where `P_min` is the smallest
+required power that selects it. At the sunniest sampled grid cell (annual PSH
+{max_psh:.2f}), for every configuration a 150 m buffer can need:
 
 {markdown_table(reach)}
 
 {reach_note}
+
+{_demo_sites_section(report, frame, demo)}
 """,
     )
     return frame
@@ -479,9 +471,10 @@ def _areas(cluster: ParcelCluster) -> dict[CropCategory, float]:
 
 
 def _batch_row(
-    cluster: ParcelCluster, solar: SolarClimatology
+    well: SampledWell, solar: SolarClimatology
 ) -> tuple[dict[str, Any], bool]:
-    """Decisions for one cluster under each scenario, and the invariant check."""
+    """Decisions for one well's cluster under each scenario, and the check."""
+    cluster = well.cluster
     areas = _areas(cluster)
     demand = size_hydraulics(areas)
     pumps = select_pumps(demand.required_power_kw, demand.daily_demand_m3)
@@ -501,7 +494,10 @@ def _batch_row(
     )
     harvest = annual_harvest_kg(areas)
     row: dict[str, Any] = {
-        "lat": round(cluster.centroid_lat, 5), "lon": round(cluster.centroid_lon, 5),
+        "well_lat": round(well.lat, 6), "well_lon": round(well.lon, 6),
+        "centroid_lat": round(cluster.centroid_lat, 5),
+        "centroid_lon": round(cluster.centroid_lon, 5),
+        "crops": "+".join(sorted(k.value for k, a in areas.items() if a > 0)),
         "area_ha": sum(areas.values()), "pumps": pumps.label,
         "pv_kwp": pumps.pv_kwp, "annual_psh": solar.annual_psh,
         "surplus_rated": surplus[RATED], "surplus_demand": surplus[DEMAND],
@@ -514,6 +510,93 @@ def _batch_row(
         row[f"asset_{i}"] = decision.selected.asset.name if decision.selected else None
         row[f"payback_{i}"] = decision.payback_years
     return row, ok
+
+
+def _reach_table(frame: pd.DataFrame, psh: float) -> tuple[pd.DataFrame, str]:
+    """Largest demand-based surplus of each pump configuration, and the note."""
+    hours = HydraulicConfig().pumping_hours_per_day
+    derate = EnergyConfig().pv_derate
+    tiers = sorted(PUMP_CATALOGUE, key=lambda t: t.motor_kw)
+    largest = tiers[-1].motor_kw
+    max_area = math.pi * SpatialConfig().buffer_radius_m**2 / M2_PER_HA
+    max_power = max(size_hydraulics({k: max_area}).required_power_kw
+                    for k in CROP_ARCHETYPES)
+    rows = []
+    for n in range(1, math.ceil(max_power / largest) + 1):
+        for i, tier in enumerate(tiers):
+            p_min = max(largest * (n - 1), n * (tiers[i - 1].motor_kw if i else 0.0))
+            if n * tier.motor_kw <= p_min or p_min >= max_power:
+                continue  # this configuration is never selected
+            label = f"{n} x {tier.name}"
+            ceiling = n * tier.pv_kwp * psh * derate - hours * p_min
+            rows.append({
+                "Pumps": label, "P_min (kW)": p_min,
+                "Clusters in batch": int((frame["pumps"] == label).sum()),
+                "Max surplus, demand-based (kWh/day)": ceiling,
+                "Assets within reach": ", ".join(
+                    _short(a.name) for a in PUE_CATALOGUE
+                    if a.daily_load_kwh <= ceiling) or "none",
+            })
+    table = pd.DataFrame(rows)
+    reachable = {name for cell in table["Assets within reach"] for name in
+                 cell.split(", ") if cell != "none"}
+    unreachable = [_short(a.name) for a in PUE_CATALOGUE
+                   if _short(a.name) not in reachable]
+    tier1 = tiers[0]
+    dryer = min(a.daily_load_kwh for a in PUE_CATALOGUE)
+    p_dryer = (tier1.pv_kwp * psh * derate - dryer) / hours
+    others = [r["Pumps"] for _, r in table.iloc[1:].iterrows()
+              if r["Assets within reach"] != "none"]
+    bands = (f", and by {', '.join(others)} only just above P_min"
+             if others else "")
+    note = (
+        f"No pump configuration can power the {' or the '.join(unreachable)} on "
+        "an annual basis, whatever the consumption assumption. The dryer is "
+        f"reachable by Tier 1 clusters needing at most {p_dryer:.2f} kW{bands}, "
+        "which is why every investment in the batch is a dryer."
+        if unreachable
+        else "Every asset is reachable by at least one pump configuration."
+    )
+    return table, note
+
+
+def _demo_sites_section(
+    report: Report, frame: pd.DataFrame, demo: tuple[float, float]
+) -> str:
+    """Select additional demonstration wells by rule and describe them."""
+    picks: list[tuple[str, str, pd.Series]] = []
+    invest = frame[frame["payback_1"].notna()]
+    if len(invest):
+        picks.append(("Investment", "Shortest demand-based payback in the batch",
+                      invest.loc[invest["payback_1"].idxmin()]))
+    pasture = frame[frame["crops"] == CropCategory.PASTURES.value]
+    if len(pasture):
+        distance = haversine_km(demo[0], demo[1], pasture["well_lat"],
+                                pasture["well_lon"])
+        picks.append(("No compatible crops",
+                      "Pasture-only cluster nearest to the demonstration site",
+                      pasture.loc[distance.idxmin()]))
+    if not picks:
+        return ""
+    sites = pd.DataFrame(
+        [{"role": role, "rule": rule, "well_lat": row["well_lat"],
+          "well_lon": row["well_lon"]} for role, rule, row in picks]
+    )
+    sites.to_csv(report.directory / "demo_sites.csv", index=False)
+    table = pd.DataFrame(
+        [{"Role": role, "Rule": rule,
+          "Well": f"({row['well_lat']:.5f}, {row['well_lon']:.5f})",
+          "Crops": row["crops"], "Area (ha)": row["area_ha"],
+          "Pumps": row["pumps"], "Headline": row["status_0"],
+          "Demand-based": (f"{row['asset_1']} ({row['payback_1']:.1f} y)"
+                           if pd.notna(row["asset_1"]) else row["status_1"])}
+         for role, rule, row in picks]
+    )
+    return f"""**Additional demonstration sites.** Selected from the batch by fixed
+rules and written to `demo_sites.csv`; `run_demo.py` runs them at the same
+wells, so its output reproduces these rows.
+
+{markdown_table(table)}"""
 
 
 def _consistent(decision: PueDecision) -> bool:

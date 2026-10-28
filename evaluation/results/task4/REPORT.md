@@ -140,17 +140,31 @@ requirements):
 
 *Batch run over random wells.*
 
-**Which assets are reachable.** Even with no pump consumption, the surplus
-cannot exceed the PV generation `PV_kWp x PSH x derate`. At the sunniest sampled
-grid cell (annual PSH 5.05) this ceiling is:
+**Which assets are reachable.** A larger pump is selected only when the
+demand, and therefore the consumption, is larger. Even with demand-based
+consumption the surplus of a pump configuration therefore cannot exceed
+`PV_kWp x PSH x derate - t_pump x P_min`, where `P_min` is the smallest
+required power that selects it. At the sunniest sampled grid cell (annual PSH
+5.05), for every configuration a 150 m buffer can need:
 
-| Pumps | PV (kWp) | Clusters | Max E_PV (kWh/day) | Assets within reach |
+| Pumps | P_min (kW) | Clusters in batch | Max surplus, demand-based (kWh/day) | Assets within reach |
 |---|---|---|---|---|
-| 1 x Tier 1 | 5 | 287 | 18.94 | Dryer |
-| 1 x Tier 2 | 7.5 | 11 | 28.41 | Cold Room, Mill, Dryer |
-| 1 x Tier 4 | 15 | 2 | 56.81 | Cold Room, Mill, Dryer |
+| 1 x Tier 1 | 0 | 287 | 18.94 | Dryer |
+| 1 x Tier 2 | 3.7 | 11 | 6.206 | none |
+| 1 x Tier 3 | 5.5 | 0 | 4.875 | none |
+| 1 x Tier 4 | 7.5 | 2 | 11.81 | Dryer |
+| 2 x Tier 3 | 11 | 0 | 9.75 | none |
 
-For 287 of 300 clusters the dryer is the only asset the PV array could ever power on an annual basis, whatever the consumption assumption; the cold room and the mill need a larger array.
+No pump configuration can power the Cold Room or the Mill on an annual basis, whatever the consumption assumption. The dryer is reachable by Tier 1 clusters needing at most 1.49 kW, and by 1 x Tier 4 only in a narrow band just above their P_min, which is why every investment in the batch is a dryer.
+
+**Additional demonstration sites.** Selected from the batch by fixed
+rules and written to `demo_sites.csv`; `run_demo.py` runs them at the same
+wells, so its output reproduces these rows.
+
+| Role | Rule | Well | Crops | Area (ha) | Pumps | Headline | Demand-based |
+|---|---|---|---|---|---|---|---|
+| Investment | Shortest demand-based payback in the batch | (40.25284, -7.50536) | 50 | 0.4953 | 1 x Tier 1 | insufficient_surplus | Solar Hybrid Dryer (11.2 y) |
+| No compatible crops | Pasture-only cluster nearest to the demonstration site | (38.17968, -8.36278) | 30 | 2.157 | 1 x Tier 1 | no_compatible_crops | no_compatible_crops |
 
 ## 5. Cold-room capacity
 
@@ -171,10 +185,10 @@ only if the harvest arrives faster than one load per storage period.
 
 | Item | Value |
 |---|---|
-| Generated (UTC) | 2026-10-27 18:25 |
+| Generated (UTC) | 2026-10-28 10:10 |
 | Python | 3.10.12 |
 | Platform | Linux-6.8.0-106-generic-x86_64-with-glibc2.35 |
-| Git commit | eef0ef2 |
+| Git commit | 700d4a0 |
 | Random seed | 20261027 |
 | geopandas | 1.1.4 |
 | shapely | 2.1.2 |

@@ -41,6 +41,7 @@ from evaluation.common import (
     TRANSECT,
     Report,
     demo_site,
+    haversine_km,
     markdown_table,
 )
 
@@ -359,7 +360,7 @@ def evaluate_water_demand(report: Report, lat: float, lon: float) -> None:
     low = ", ".join(k for k, r in ratios.items() if r < 0.7)
     high = ", ".join(k for k, r in ratios.items() if r >= 0.7)
     excess = hargreaves_peak / EVORA_JULY_ET0_PM - 1
-    station_km = _haversine_km(lat, lon, *EVORA_STATION)
+    station_km = float(haversine_km(lat, lon, *EVORA_STATION))
     gap_note = (
         "which lies within that documented range."
         if -0.05 <= excess <= 0.23
@@ -746,14 +747,6 @@ def _extraterrestrial_radiation(lat: float, day: pd.Timestamp) -> float:
         * (omega * math.sin(phi) * math.sin(delta)
            + math.cos(phi) * math.cos(delta) * math.sin(omega))
     )
-
-
-def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    """Great-circle distance in kilometres (mean Earth radius 6371 km)."""
-    p1, p2 = math.radians(lat1), math.radians(lat2)
-    dp, dl = p2 - p1, math.radians(lon2 - lon1)
-    a = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
-    return 2 * 6371.0 * math.asin(math.sqrt(a))
 
 
 if __name__ == "__main__":

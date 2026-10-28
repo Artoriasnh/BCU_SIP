@@ -155,7 +155,7 @@ required power that selects it. At the sunniest sampled grid cell (annual PSH
 | 1 x Tier 4 | 7.5 | 2 | 11.81 | Dryer |
 | 2 x Tier 3 | 11 | 0 | 9.75 | none |
 
-No pump configuration can power the Cold Room or the Mill on an annual basis, whatever the consumption assumption. The dryer is reachable by Tier 1 clusters needing at most 1.49 kW, and by 1 x Tier 4 only in a narrow band just above their P_min, which is why every investment in the batch is a dryer.
+No pump configuration can power the Cold Room or the Mill on an annual basis, whatever the consumption assumption. The dryer is reachable by Tier 1 clusters needing at most 1.49 kW, and by 1 x Tier 4 only just above P_min, which is why every investment in the batch is a dryer.
 
 **Additional demonstration sites.** Selected from the batch by fixed
 rules and written to `demo_sites.csv`; `run_demo.py` runs them at the same
@@ -185,10 +185,10 @@ only if the harvest arrives faster than one load per storage period.
 
 | Item | Value |
 |---|---|
-| Generated (UTC) | 2026-10-28 10:10 |
+| Generated (UTC) | 2026-10-28 10:59 |
 | Python | 3.10.12 |
 | Platform | Linux-6.8.0-106-generic-x86_64-with-glibc2.35 |
-| Git commit | 700d4a0 |
+| Git commit | ef2eb1b |
 | Random seed | 20261027 |
 | geopandas | 1.1.4 |
 | shapely | 2.1.2 |

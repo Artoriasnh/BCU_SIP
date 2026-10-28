@@ -215,10 +215,10 @@ against the real network stack.
 
 | Item | Value |
 |---|---|
-| Generated (UTC) | 2026-10-27 18:24 |
+| Generated (UTC) | 2026-10-28 10:59 |
 | Python | 3.10.12 |
 | Platform | Linux-6.8.0-106-generic-x86_64-with-glibc2.35 |
-| Git commit | eef0ef2 |
+| Git commit | ef2eb1b |
 | Random seed | 20261027 |
 | geopandas | 1.1.4 |
 | shapely | 2.1.2 |

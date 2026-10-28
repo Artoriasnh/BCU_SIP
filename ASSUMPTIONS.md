@@ -301,9 +301,9 @@ section 4).
   climate. *Agriculture* 11(2), 124.
 - Schneider, M., Broszeit, A. & Körner, M. (2021). EuroCrops: a pan-European
   dataset for time series crop type classification. arXiv:2106.08151.
-- Schneider, M. et al. (2023). EuroCrops: the largest harmonized open crop
-  dataset across the European Union. *Scientific Data* 10.
-  doi:10.1038/s41597-023-02517-0
+- Schneider, M., Schelte, T., Schmitz, F. & Körner, M. (2023). EuroCrops: the
+  largest harmonized open crop dataset across the European Union. *Scientific
+  Data* 10, 612. doi:10.1038/s41597-023-02517-0
 - Takeshima, H., Yamauchi, F., Bawa, D., Kamaldeen, S. O., Edeh, H. O. &
   Hernandez, M. (2021). *Solar-powered cold-storages and sustainable food
   system transformation: evidence from horticulture markets interventions in

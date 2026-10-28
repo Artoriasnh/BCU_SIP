@@ -1,7 +1,9 @@
-# --- Raw data (too large for GitHub; see README for download instructions) ---
+# --- Data: only the original EuroCrops archive is versioned (see data/README.md) ---
 PT/
-data/raw/
+data/raw/*
+!data/raw/PT.zip
 *.zip
+!data/raw/PT.zip
 *.shp
 *.shx
 *.dbf

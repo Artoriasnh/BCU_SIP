@@ -1,8 +1,8 @@
 # Copyright (c) 2026 Hao Ni. All rights reserved.
 #
 # Lint, type-check and test on every push and pull request (Python 3.10, the
-# project's target version). Tests that need the EuroCrops layer or the live
-# NASA POWER API are skipped automatically.
+# project's target version). Integration tests run on the bundled EuroCrops
+# layer; live NASA POWER tests are skipped.
 name: CI
 
 on:

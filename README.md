@@ -30,11 +30,12 @@ pytest --cov=dss --cov=dss_pipeline                       # tests with coverage 
 ruff check . && mypy dss dss_pipeline.py run_demo.py      # style and types
 ```
 
-**Data.** Download `PT.zip` from [Zenodo record 10118572](https://zenodo.org/records/10118572/files/PT.zip)
-(MD5 `3dba9c89c559b34d57acd286505bcb66`) and place it at `data/raw/PT.zip`.
-It is read in place, without unzipping (GDAL `/vsizip/`). An unzipped
-shapefile, or any layer with the same schema, can be passed with `--data`.
-Tests that need the layer are skipped when it is absent.
+**Data.** The EuroCrops Portugal layer is included at `data/raw/PT.zip`,
+unchanged from [Zenodo record 10118572](https://zenodo.org/records/10118572/files/PT.zip)
+(MD5 `3dba9c89c559b34d57acd286505bcb66`, CC BY-SA 4.0; provenance and citation
+in [`data/README.md`](data/README.md)). It is read in place, without unzipping
+(GDAL `/vsizip/`), so the repository runs as cloned. An unzipped shapefile, or
+any layer with the same schema, can be passed with `--data`.
 
 ## Result at the demonstration site
 
